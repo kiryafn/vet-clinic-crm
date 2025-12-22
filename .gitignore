@@ -148,7 +148,7 @@ activemq-data/
 *.sage.py
 
 # Environments
-.env
+backend/.env
 .envrc
 .venv
 env/
@@ -217,8 +217,10 @@ __marimo__/
 
 /.idea
 .idea/*
-
 idea/
 /.idea/
 .idea
 .idea/
+
+*.db
+.DS_Store
