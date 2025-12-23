@@ -8,6 +8,9 @@ sys.path.append(os.getcwd())
 from app.core.config import settings
 from app.db.base import Base
 
+from app.users.models import User
+from app.doctors.models import Doctor, Specialization
+
 config = context.config
 fileConfig(config.config_file_name)
 

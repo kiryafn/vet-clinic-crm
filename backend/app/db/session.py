@@ -1,17 +1,18 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app import settings
-
-connect_args = {"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from app.core.config import settings
 
 engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args=connect_args,
-    echo=True
+    settings.DB_URL,
+    connect_args={"check_same_thread": False}
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+class Base(DeclarativeBase):
+    pass
+
+# Dependency Injection для FastAPI
 def get_db():
     db = SessionLocal()
     try:
