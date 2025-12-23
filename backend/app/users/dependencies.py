@@ -35,3 +35,13 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
+async def get_current_admin(
+    current_user: models.User = Depends(get_current_user)
+) -> models.User:
+    if current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+    return current_user

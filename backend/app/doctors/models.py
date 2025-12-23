@@ -2,14 +2,19 @@ from sqlalchemy import String, Integer, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
+from app.users import User
 
 
 class Specialization(Base):
     __tablename__ = "specializations"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    name_ru: Mapped[str] = mapped_column(String(100), unique=True)
+    name_en: Mapped[str] = mapped_column(String(100), unique=True)
+
+    description_ru: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description_en: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     doctors: Mapped[list["Doctor"]] = relationship(back_populates="specialization")
 
@@ -26,5 +31,5 @@ class Doctor(Base):
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
     price: Mapped[int] = mapped_column(Integer, default=1000)  # Цена за прием (в копейках или целых единицах)
 
-    user: Mapped["User"] = relationship(back_populates="doctor", lazy="joined")
+    user: Mapped["User"] = relationship(lazy="joined")
     specialization: Mapped["Specialization"] = relationship(back_populates="doctors", lazy="joined")

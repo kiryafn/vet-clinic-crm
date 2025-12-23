@@ -5,9 +5,8 @@ from app.users.router import router as users_router
 from app.users import models as user_models
 from app.doctors import models as doctor_models
 
-# ... код lifespan
 @asynccontextmanager
-async def lifespan():
+async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     yield
 
