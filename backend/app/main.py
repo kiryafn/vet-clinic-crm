@@ -2,9 +2,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.db.session import Base, engine
 from app.users.router import router as users_router
+from app.users import models as user_models
+from app.doctors import models as doctor_models
 
+# ... код lifespan
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan():
     Base.metadata.create_all(bind=engine)
     yield
 

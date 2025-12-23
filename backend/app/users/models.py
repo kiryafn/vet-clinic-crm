@@ -2,8 +2,12 @@ import enum
 from datetime import datetime
 from sqlalchemy import String, Enum, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
-
+from typing import TYPE_CHECKING
 from app.db.session import Base
+
+if TYPE_CHECKING:
+    from app.doctors.models import Doctor
+
 
 
 class UserRole(str, enum.Enum):
