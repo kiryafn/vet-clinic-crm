@@ -6,8 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.users import crud, models
-
+from app.users import crud, models, User, UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 
@@ -37,9 +36,9 @@ async def get_current_user(
     return user
 
 async def get_current_admin(
-    current_user: models.User = Depends(get_current_user)
-) -> models.User:
-    if current_user.role != models.UserRole.ADMIN:
+    current_user: User = Depends(get_current_user)
+) -> User:
+    if current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
