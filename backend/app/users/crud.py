@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.users.models import User
+from app.users.models import User, UserRole
 from app.users.schemas import UserCreate
 from app.core.security import get_password_hash
 
@@ -13,7 +13,7 @@ def create_user(db: Session, user: UserCreate) -> User:
         email=user.email,
         password_hash=password_hash,
         full_name=user.full_name,
-        role=user.role,
+        role=UserRole.CLIENT,
         phone_number=user.phone_number,
         address=user.address
     )
