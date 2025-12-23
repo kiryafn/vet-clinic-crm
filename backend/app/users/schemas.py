@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from app.users.models import UserRole
 
 class UserBase(BaseModel):
@@ -9,11 +9,11 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(min_length=6, max_length=50)
     role: UserRole = UserRole.CLIENT
 
 
-class UserRead(UserBase):
+class UserResponse(UserBase):
     id: int
     role: UserRole
 
