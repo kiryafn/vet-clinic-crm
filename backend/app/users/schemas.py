@@ -1,18 +1,20 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
-from .models import UserRole
+from app.users.models import UserRole
 
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
     phone_number: str | None = None
     address: str | None = None
-    role: UserRole = UserRole.CLIENT
+
 
 class UserCreate(UserBase):
     password: str
+    role: UserRole = UserRole.CLIENT
 
-class UserResponse(UserBase):
+
+class UserRead(UserBase):
     id: int
-    is_active: bool
+    role: UserRole
 
     model_config = ConfigDict(from_attributes=True)

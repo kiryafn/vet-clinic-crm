@@ -1,6 +1,7 @@
 from sqlalchemy import String, Integer, ForeignKey, Text, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.db.base import Base
+
+from app.db.session import Base
 
 
 class Specialization(Base):
