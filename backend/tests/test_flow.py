@@ -103,7 +103,9 @@ async def test_full_flow(async_client):
     }
     resp = await async_client.post("/doctors/", json=doctor_data, headers=admin_auth_header)
     assert resp.status_code == 201
-    doctor_id = resp.json()["doctor_id"]
+    doctor_obj = resp.json()
+    doctor_id = doctor_obj["id"]
+    print(f"Created Doctor: {doctor_obj}") # Debug info
 
     # Login as Doctor
     doc_token_resp = await async_client.post("/users/login", data={"username": "doctor@example.com", "password": "docpass"})

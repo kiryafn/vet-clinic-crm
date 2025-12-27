@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import date
 
 
@@ -19,5 +19,4 @@ class PetRead(PetBase):
     owner_id: int
     age: dict | None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

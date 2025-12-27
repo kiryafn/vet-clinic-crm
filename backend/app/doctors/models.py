@@ -2,6 +2,7 @@ from sqlalchemy import String, Integer, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
+from app.core.models import TimestampMixin
 from app.users import User
 
 
@@ -19,7 +20,7 @@ class Specialization(Base):
     doctors: Mapped[list["Doctor"]] = relationship(back_populates="specialization")
 
 
-class Doctor(Base):
+class Doctor(Base, TimestampMixin):
     __tablename__ = "doctors"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -41,3 +42,6 @@ class Doctor(Base):
     @property
     def specialization_name(self) -> str:
         return self.specialization.name_ru if self.specialization else "Unknown"
+    
+    def __repr__(self) -> str:
+        return f"<Doctor {self.id} (User: {self.user_id})>"

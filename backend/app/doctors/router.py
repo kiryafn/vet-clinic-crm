@@ -10,7 +10,7 @@ from app.doctors import models, schemas, service
 router = APIRouter(prefix="/doctors", tags=["Doctors"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.DoctorRead)
 async def create_doctor(
         doctor_in: schemas.DoctorCreate,
         db: SessionDep,
@@ -26,7 +26,7 @@ async def create_doctor(
 
     try:
         db_doctor = await service.create_doctor(db, doctor_in)
-        return {"status": "success", "doctor_id": db_doctor.id}
+        return db_doctor
 
     except Exception as e:
         await db.rollback()

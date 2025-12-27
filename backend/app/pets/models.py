@@ -4,10 +4,11 @@ from sqlalchemy import String, Integer, ForeignKey, Text, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
+from app.core.models import TimestampMixin
 from app.users.models import User
 
 
-class Pet(Base):
+class Pet(Base, TimestampMixin):
     __tablename__ = "pets"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -36,3 +37,6 @@ class Pet(Base):
             months += 12
 
         return {"years": years, "months": months}
+    
+    def __repr__(self) -> str:
+        return f"<Pet {self.name} ({self.species})>"

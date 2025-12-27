@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
 class DoctorCreate(BaseModel):
@@ -18,5 +18,4 @@ class DoctorRead(BaseModel):
     full_name: str
     specialization_name: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

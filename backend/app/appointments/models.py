@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import ForeignKey, Text, DateTime, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.db import Base
+from app.core.models import TimestampMixin
 from app.users.models import User
 from app.doctors.models import Doctor
 from app.pets.models import Pet
@@ -12,7 +13,7 @@ class AppointmentStatus(str, enum.Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
 
-class Appointment(Base):
+class Appointment(Base, TimestampMixin):
     __tablename__ = "appointments"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -34,3 +35,6 @@ class Appointment(Base):
     user: Mapped["User"] = relationship()
     doctor: Mapped["Doctor"] = relationship()
     pet: Mapped["Pet"] = relationship()
+
+    def __repr__(self) -> str:
+        return f"<Appointment {self.id} ({self.date_time})>"
