@@ -11,14 +11,14 @@ router = APIRouter(prefix="/pets", tags=["Pets"])
 @router.post("/", response_model=schemas.PetRead, status_code=status.HTTP_201_CREATED)
 def create_pet(
     pet: schemas.PetCreate,
-    db: Session = SessionDep,
-    current_user: User = CurrentUser
+    db: SessionDep,
+    current_user: CurrentUser
 ):
     return pet_service.create_pet(db=db, pet=pet, owner_id=current_user.id)
 
 @router.get("/", response_model=list[schemas.PetRead])
 def get_my_pets(
-    db: Session = SessionDep,
-    current_user: User = CurrentUser
+    db: SessionDep,
+    current_user: CurrentUser
 ):
     return pet_service.get_pets_by_owner(db=db, owner_id=current_user.id)
