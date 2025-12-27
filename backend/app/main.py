@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="VetClinic CRM", lifespan=lifespan)
 
 app.include_router(users_router)
-app.include_routear(doctors_router)
+app.include_router(doctors_router)
 
 @app.get("/")
 def read_root():
