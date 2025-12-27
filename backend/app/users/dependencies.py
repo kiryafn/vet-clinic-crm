@@ -10,7 +10,6 @@ from app.users import service, models, User, UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 
-
 async def get_current_user(
         token: Annotated[str, Depends(oauth2_scheme)],
         db: Session = Depends(get_db)
@@ -29,7 +28,7 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    user = crud.get_user_by_email(db, email=email)
+    user = service.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception
 
@@ -44,3 +43,5 @@ async def get_current_admin(
             detail="Not enough permissions"
         )
     return current_user
+
+CurrentUser = Annotated[User, Depends(get_current_user)]

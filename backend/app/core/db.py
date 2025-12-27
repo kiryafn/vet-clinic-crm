@@ -22,4 +22,4 @@ def get_db():
     finally:
         db.close()
 
-Session = Annotated[Session, Depends(get_db)]
+SessionDep = Annotated[Session, Depends(get_db)]
