@@ -37,3 +37,7 @@ class Doctor(Base):
     @property
     def full_name(self) -> str:
         return self.user.full_name if self.user else "Unknown"
+
+    @property
+    def specialization_name(self) -> str:
+        return self.specialization.name_ru if self.specialization else "Unknown"

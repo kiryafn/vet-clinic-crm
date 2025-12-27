@@ -16,6 +16,8 @@ class AppointmentCreate(AppointmentBase):
     pet_id: int
     date_time: datetime
 
+class AppointmentUpdate(BaseModel):
+    doctor_notes: str
 
 class AppointmentRead(AppointmentBase):
     id: int

@@ -1,17 +1,20 @@
 import sys
 import os
+import asyncio
 
 sys.path.append(os.getcwd())
 
-from app.core.db import Base, Session, session, engine
+from sqlalchemy import select
+from app.core.db import Base, async_session_factory, engine, AsyncSession
 from app.doctors.models import Specialization
 from app.users.models import User, UserRole
 from app.pets.models import Pet
 from app.core.security import get_password_hash
 
 
-def init_db(db: Session):
-    if not db.query(Specialization).first():
+async def init_db(db: AsyncSession):
+    result = await db.execute(select(Specialization))
+    if not result.scalars().first():
         specs = [
             Specialization(
                 name_ru="Терапевт", name_en="General Practitioner",
@@ -35,13 +38,14 @@ def init_db(db: Session):
             ),
         ]
         db.add_all(specs)
-        db.commit()
+        await db.commit()
         print("✅ Специализации добавлены!")
     else:
         print("⚠️ Специализации уже есть.")
 
     admin_email = "admin@vet.com"
-    if not db.query(User).filter(User.email == admin_email).first():
+    result = await db.execute(select(User).filter(User.email == admin_email))
+    if not result.scalars().first():
         admin = User(
             email=admin_email,
             password_hash=get_password_hash("admin123"),
@@ -50,16 +54,17 @@ def init_db(db: Session):
             phone_number="+0000000000"
         )
         db.add(admin)
-        db.commit()
+        await db.commit()
         print(f"✅ Супер-Админ создан: {admin_email} / admin123")
     else:
         print("⚠️ Админ уже существует.")
 
-def setup():
-    Base.metadata.create_all(bind=engine)
+async def setup():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
-    db = session()
-    try:
-        init_db(db)
-    finally:
-        db.close()
+    async with async_session_factory() as db:
+        await init_db(db)
+
+if __name__ == "__main__":
+    asyncio.run(setup())

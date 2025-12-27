@@ -1,25 +1,29 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, Session
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 
-engine = create_engine(
-    settings.DATABASE_URL,
+# Use aiosqlite for async sqlite
+# Update DATABASE_URL in config or here to start with sqlite+aiosqlite://
+# Assuming settings.DATABASE_URL is something like "sqlite:///./sql_app.db"
+# We need to transform it or ensure it's correct. 
+# For safety, let's patch it purely for async here if it's standard sqlite.
+db_url = settings.DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://")
+
+engine = create_async_engine(
+    db_url,
     connect_args={"check_same_thread": False}
 )
 
 class Base(DeclarativeBase):
     pass
 
-session = sessionmaker(expire_on_commit=False, bind=engine)
+async_session_factory = async_sessionmaker(expire_on_commit=False, bind=engine)
 
-def get_db():
-    db = session()
-    try:
+async def get_db():
+    async with async_session_factory() as db:
         yield db
-    finally:
-        db.close()
 
-SessionDep = Annotated[Session, Depends(get_db)]
+SessionDep = Annotated[AsyncSession, Depends(get_db)]

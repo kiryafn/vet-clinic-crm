@@ -14,7 +14,7 @@ from app.appointments import models as appointment_models
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    setup()
+    await setup()
     yield
 
 app = FastAPI(title="VetClinic CRM", lifespan=lifespan)

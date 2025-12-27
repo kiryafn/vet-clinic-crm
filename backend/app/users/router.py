@@ -3,11 +3,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 
 from app.core import security
 from app.core.config import settings
-from app.core.db import get_db
+from app.core.db import SessionDep
 from app.users import schemas, service, User
 from app.users.dependencies import get_current_user
 
@@ -15,8 +14,8 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.post("/", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
-def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = service.get_user_by_email(db, email=user.email)
+async def register(user: schemas.UserCreate, db: SessionDep):
+    db_user = await service.get_user_by_email(db, email=user.email)
 
     if db_user:
         raise HTTPException(
@@ -24,15 +23,15 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
 
-    return service.create_user(db=db, user=user)
+    return await service.create_user(db=db, user=user)
 
 
 @router.post("/login", response_model=schemas.Token)
-def login(
+async def login(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        db: Session = Depends(get_db)
+        db: SessionDep
 ):
-    user = service.get_user_by_email(db, email=form_data.username)
+    user = await service.get_user_by_email(db, email=form_data.username)
 
     if not user or not security.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
@@ -50,5 +49,5 @@ def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=schemas.UserResponse)
-def read_users_me(current_user: User = Depends(get_current_user)):
+async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
