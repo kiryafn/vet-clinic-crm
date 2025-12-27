@@ -33,3 +33,7 @@ class Doctor(Base):
 
     user: Mapped["User"] = relationship(lazy="joined")
     specialization: Mapped["Specialization"] = relationship(back_populates="doctors", lazy="joined")
+
+    @property
+    def full_name(self) -> str:
+        return self.user.full_name if self.user else "Unknown"
