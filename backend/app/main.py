@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
-from app.core.initial_data import init_db, setup
-from app.db.session import Base, engine
+from app.core.initial_data import setup
 from app.users.router import router as users_router
 from app.doctors.router import router as doctors_router
+from app.users import models as user_models
+from app.doctors import models as doctor_models
+from app.pets import models as pet_models
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,7 +16,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="VetClinic CRM", lifespan=lifespan)
 
 app.include_router(users_router)
-app.include_router(doctors_router)
+app.include_routear(doctors_router)
 
 @app.get("/")
 def read_root():

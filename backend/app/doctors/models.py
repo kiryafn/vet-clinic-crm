@@ -1,7 +1,7 @@
 from sqlalchemy import String, Integer, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.session import Base
+from app.core.db import Base
 from app.users import User
 
 

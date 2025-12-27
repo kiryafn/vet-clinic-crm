@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.core import security
 from app.core.config import settings
-from app.db.session import get_db
-from app.users import schemas, crud, User
+from app.core.db import get_db
+from app.users import schemas, service, User
 from app.users.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])

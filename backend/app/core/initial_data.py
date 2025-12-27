@@ -3,10 +3,10 @@ import os
 
 sys.path.append(os.getcwd())
 
-from sqlalchemy.orm import Session
-from app.db.session import SessionLocal, Base, engine
+from app.core.db import Base, Session, session, engine
 from app.doctors.models import Specialization
 from app.users.models import User, UserRole
+from app.pets.models import Pet
 from app.core.security import get_password_hash
 
 
@@ -58,7 +58,7 @@ def init_db(db: Session):
 def setup():
     Base.metadata.create_all(bind=engine)
 
-    db = SessionLocal()
+    db = session()
     try:
         init_db(db)
     finally:

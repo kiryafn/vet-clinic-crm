@@ -1,13 +1,13 @@
 import enum
 from datetime import datetime
-from sqlalchemy import String, Enum, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Enum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
-from app.db.session import Base
+from app.core.db import Base
 
 if TYPE_CHECKING:
     from app.doctors.models import Doctor
-
+    from app.pets.models import Pet
 
 
 class UserRole(str, enum.Enum):
@@ -26,3 +26,7 @@ class User(Base):
     phone_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
     address: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+    doctor: Mapped["Doctor"] = relationship(back_populates="user", uselist=False)
+
+    pets: Mapped[list["Pet"]] = relationship(back_populates="owner")
