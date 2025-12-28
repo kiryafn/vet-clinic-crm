@@ -13,7 +13,7 @@ from app.users.dependencies import get_current_user
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.post("/", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user: schemas.UserCreate, db: SessionDep):
     db_user = await service.get_user_by_email(db, email=user.email)
 

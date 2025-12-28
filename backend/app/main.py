@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 #routers
 from app.core.initial_data import setup
 from app.users.router import router as users_router
@@ -17,22 +18,21 @@ async def lifespan(app: FastAPI):
     await setup()
     yield
 
-from fastapi.middleware.cors import CORSMiddleware
-
 app = FastAPI(title="VetClinic CRM", lifespan=lifespan)
 
-# CORS Configuration
+# --- 2. ДОБАВЛЯЕМ ЭТОТ БЛОК СРАЗУ ПОСЛЕ СОЗДАНИЯ APP ---
+# Разрешаем запросы с фронтенда (localhost:5173)
 origins = [
-    "http://localhost:5173", # Vite default
-    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=origins,    # Разрешаем эти источники
+    allow_credentials=True,   # Разрешаем куки/токены
+    allow_methods=["*"],      # Разрешаем все методы (GET, POST, OPTIONS и т.д.)
+    allow_headers=["*"],      # Разрешаем все заголовки
 )
 
 app.include_router(users_router)

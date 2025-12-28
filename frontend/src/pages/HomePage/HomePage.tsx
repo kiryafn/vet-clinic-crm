@@ -6,7 +6,7 @@ export const HomePage = () => {
         <div className="min-h-screen bg-gray-50">
             <Header />
             <div className="container mx-auto px-4 py-8 text-center">
-                <h1 className="text-4xl font-bold mb-4">Welcome to Vet Clinic CRM</h1>
+                <h1 className="text-4xl font-bold mb-4">Welcome to Vet Clinic</h1>
                 <p className="text-xl text-gray-600 mb-8">
                     Manage your pets and appointments with ease.
                 </p>
