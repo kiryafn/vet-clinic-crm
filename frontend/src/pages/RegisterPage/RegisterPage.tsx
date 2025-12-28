@@ -1,5 +1,5 @@
-import { RegisterForm } from '../../widgets/RegisterForm';
-import { Header } from '../../widgets/Header';
+import { RegisterForm } from '../../widgets/RegisterForm/RegisterForm';
+import { Header } from '../../widgets/Header/Header';
 
 export const RegisterPage = () => {
     return (

@@ -1,4 +1,4 @@
-import { api } from '../../../shared/api';
+import { api } from '../../../shared/api/api';
 import type { User } from '../../user/model/types';
 import type { AuthResponse } from '../model/types';
 import type { LoginParams, RegisterParams } from './types';

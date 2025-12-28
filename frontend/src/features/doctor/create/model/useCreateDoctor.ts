@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api } from '../../../../shared/api';
+import { api } from '../../../../shared/api/api';
 import type { Doctor } from '../../../../entities/doctor/model/types';
 
 interface CreateDoctorParams {

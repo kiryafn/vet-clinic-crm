@@ -1,3 +1,3 @@
-export * from './Button';
-export * from './Input';
-export * from './Card';
+export * from './Button/Button';
+export * from './Input/Input';
+export * from './Card/Card';

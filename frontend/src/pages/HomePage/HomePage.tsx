@@ -1,4 +1,4 @@
-import { Header } from '../../widgets/Header';
+import { Header } from '../../widgets/Header/Header';
 import { Card } from '../../shared/ui';
 
 export const HomePage = () => {

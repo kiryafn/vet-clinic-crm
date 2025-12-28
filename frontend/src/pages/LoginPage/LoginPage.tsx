@@ -1,5 +1,5 @@
-import { LoginForm } from '../../widgets/LoginForm';
-import { Header } from '../../widgets/Header';
+import { LoginForm } from '../../widgets/LoginForm/LoginForm';
+import { Header } from '../../widgets/Header/Header';
 
 export const LoginPage = () => {
     return (

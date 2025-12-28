@@ -1,5 +1,5 @@
-import { Header } from '../../widgets/Header';
-import { CreateDoctorForm } from '../../widgets/CreateDoctorForm';
+import { Header } from '../../widgets/Header/Header';
+import { CreateDoctorForm } from '../../widgets/CreateDoctorForm/CreateDoctorForm';
 
 export const AdminDoctorsPage = () => {
     return (
