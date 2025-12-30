@@ -21,7 +21,7 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
-            window.location.href = '/login';
+            // Allow app to handle 401 gracefully via state
         }
         return Promise.reject(error);
     }

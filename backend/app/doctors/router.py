@@ -31,3 +31,12 @@ async def create_doctor(
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/", response_model=list[schemas.DoctorRead])
+async def get_doctors(
+    db: SessionDep,
+    skip: int = 0,
+    limit: int = 100
+):
+    return await service.get_doctors(db, skip=skip, limit=limit)

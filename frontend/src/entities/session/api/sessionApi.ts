@@ -17,7 +17,7 @@ export const sessionApi = {
     },
 
     register: async (params: RegisterParams): Promise<User> => {
-        const response = await api.post<User>('/users/', params);
+        const response = await api.post<User>('/users/register', params);
         return response.data;
     },
 

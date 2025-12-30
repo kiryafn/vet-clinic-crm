@@ -27,3 +27,13 @@ async def create_doctor(db: AsyncSession, doctor_in: DoctorCreate) -> Doctor:
     await db.commit()
     await db.refresh(db_doctor)
     return db_doctor
+
+
+async def get_doctors(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[Doctor]:
+    from sqlalchemy import select
+    # Eager load user relationship to get names, etc.
+    from sqlalchemy.orm import selectinload
+    
+    query = select(Doctor).options(selectinload(Doctor.user), selectinload(Doctor.specialization)).offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()

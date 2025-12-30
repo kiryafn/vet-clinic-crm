@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
-import './styles.css';
+
 
 interface CardProps {
     children: ReactNode;

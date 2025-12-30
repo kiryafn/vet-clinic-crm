@@ -3,10 +3,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str
-    SECRET_KEY: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    DATABASE_URL: str
+    PROJECT_NAME: str = "VetClinic CRM"
+    SECRET_KEY: str = "supersecretkey"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    DATABASE_URL: str = "sqlite+aiosqlite:///./sql_app.db"
 
     API_V1_STR: str = "/api/v1"
     ALGORITHM: str = "HS256"
