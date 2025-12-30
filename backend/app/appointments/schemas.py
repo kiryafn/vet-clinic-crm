@@ -23,6 +23,7 @@ class AppointmentRead(AppointmentBase):
     id: int
     status: AppointmentStatus
     date_time: datetime
+    duration_minutes: int
     doctor_notes : str | None
 
     user: UserResponse

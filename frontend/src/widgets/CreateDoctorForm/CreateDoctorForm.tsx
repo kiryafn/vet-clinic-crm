@@ -1,72 +1,83 @@
-import { type FormEvent, useState } from 'react';
-import { useCreateDoctor } from '../../features/doctor/create/model/useCreateDoctor';
+import { useState, type FormEvent } from 'react';
+import { api } from '../../shared/api/api';
 import { Button, Input, Card } from '../../shared/ui';
 
-export const CreateDoctorForm = () => {
-    const { createDoctor, isLoading, error, success } = useCreateDoctor();
+export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-        full_name: '',
-        specialization_id: '1', // Default to 1 (Therapist)
-        price: '1000',
-        experience_years: '0'
-    });
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [specializationId, setSpecializationId] = useState('1'); // Default to 1 for now
+    const [experience, setExperience] = useState('');
+    const [price, setPrice] = useState('');
+    const [bio, setBio] = useState('');
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        createDoctor({
-            ...formData,
-            specialization_id: Number(formData.specialization_id),
-            price: Number(formData.price),
-            experience_years: Number(formData.experience_years),
-        });
-    };
+        setIsLoading(true);
+        setError('');
 
-    if (success) {
-        return (
-            <Card>
-                <div className="text-green-600 text-center">
-                    Doctor created successfully!
-                    <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">Create Another</Button>
-                </div>
-            </Card>
-        );
-    }
+        try {
+            await api.post('/doctors/', {
+                email,
+                password,
+                full_name: fullName,
+                phone_number: null, // Optional
+                specialization_id: parseInt(specializationId),
+                experience_years: parseInt(experience),
+                price: parseFloat(price),
+                bio
+            });
+            onSuccess();
+            // Reset form
+            setFullName('');
+            setEmail('');
+            setPassword('');
+            setExperience('');
+            setPrice('');
+            setBio('');
+        } catch (err: any) {
+            const detail = err.response?.data?.detail;
+            if (Array.isArray(detail)) {
+                setError(detail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', '));
+            } else if (typeof detail === 'string') {
+                setError(detail);
+            } else {
+                setError('Failed to create doctor');
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
-        <Card title="Add New Doctor">
+        <Card title="Register New Doctor">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <Input label="Full Name" name="full_name" value={formData.full_name} onChange={handleChange} required />
-                <Input label="Email" type="email" name="email" value={formData.email} onChange={handleChange} required />
-                <Input label="Password" type="password" name="password" value={formData.password} onChange={handleChange} required />
+                <Input label="Full Name" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                <Input label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                <Input label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
 
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium">Specialization ID</label>
-                    <select
-                        className="p-2 border rounded"
-                        name="specialization_id"
-                        value={formData.specialization_id}
-                        onChange={handleChange}
-                    >
-                        <option value="1">Therapist</option>
-                        <option value="2">Surgeon</option>
-                        <option value="3">Ophthalmologist</option>
-                    </select>
+                <div className="input-wrapper">
+                    <label className="input-label">Specialization ID</label>
+                    {/* Ideally fetch specializations, hardcoding for speed */}
+                    <input className="input" type="number" value={specializationId} onChange={e => setSpecializationId(e.target.value)} required />
                 </div>
 
-                <Input label="Experience (Years)" type="number" name="experience_years" value={formData.experience_years} onChange={handleChange} />
-                <Input label="Price" type="number" name="price" value={formData.price} onChange={handleChange} />
+                <div className="flex gap-4">
+                    <Input label="Experience (years)" type="number" value={experience} onChange={e => setExperience(e.target.value)} required />
+                    <Input label="Price ($)" type="number" value={price} onChange={e => setPrice(e.target.value)} required />
+                </div>
+
+                <div className="input-wrapper">
+                    <label className="input-label">Bio</label>
+                    <textarea className="input min-h-[100px]" value={bio} onChange={e => setBio(e.target.value)} />
+                </div>
 
                 {error && <div className="text-red-500 text-sm">{error}</div>}
-                <Button type="submit" isLoading={isLoading}>
-                    Create Doctor
-                </Button>
+
+                <Button type="submit" isLoading={isLoading}>Create Doctor</Button>
             </form>
         </Card>
     );

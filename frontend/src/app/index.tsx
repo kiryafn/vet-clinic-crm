@@ -4,7 +4,9 @@ import { LoginPage } from '../pages/LoginPage/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage/RegisterPage';
 import { AddPetPage } from '../pages/AddPetPage/AddPetPage';
 import { BookAppointmentPage } from '../pages/BookAppointmentPage/BookAppointmentPage';
-import { AdminDoctorsPage } from '../pages/AdminDoctorsPage/AdminDoctorsPage';
+import { ManageDoctorsPage } from '../pages/ManageDoctorsPage/ManageDoctorsPage';
+import { DoctorSchedulePage } from '../pages/DoctorSchedulePage/DoctorSchedulePage';
+import { MyPetsPage } from '../pages/MyPetsPage/MyPetsPage';
 import { AuthProvider } from '../entities/session/model/store';
 import { ProtectedRoute } from './ProtectedRoute';
 import { UserRole } from '../entities/user/model/types';
@@ -34,12 +36,29 @@ export const AppRouter = () => {
                             </ProtectedRoute>
                         }
                     />
+                    <Route
+                        path="/my-pets"
+                        element={
+                            <ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
+                                <MyPetsPage />
+                            </ProtectedRoute>
+                        }
+                    />
 
                     <Route
-                        path="/admin"
+                        path="/admin/doctors"
                         element={
                             <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-                                <AdminDoctorsPage />
+                                <ManageDoctorsPage />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/doctor/schedule"
+                        element={
+                            <ProtectedRoute allowedRoles={[UserRole.DOCTOR]}>
+                                <DoctorSchedulePage />
                             </ProtectedRoute>
                         }
                     />

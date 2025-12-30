@@ -34,25 +34,64 @@ export const HomePage = () => {
 
                 {isAuthenticated ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                        <Link to="/add-pet" className="group">
-                            <Card className="h-full hover:shadow-2xl transition-all duration-300 border-l-4 border-l-indigo-500 group-hover:-translate-y-1">
-                                <h3 className="text-2xl font-bold mb-3 text-indigo-900">Add New Pet</h3>
-                                <p className="text-gray-600 mb-6">Register a new pet to your account to track their medical history.</p>
-                                <div className="text-indigo-600 font-semibold group-hover:translate-x-2 transition-transform inline-flex items-center">
-                                    Add Pet &rarr;
-                                </div>
-                            </Card>
-                        </Link>
 
-                        <Link to="/book-appointment" className="group">
-                            <Card className="h-full hover:shadow-2xl transition-all duration-300 border-l-4 border-l-pink-500 group-hover:-translate-y-1">
-                                <h3 className="text-2xl font-bold mb-3 text-indigo-900">Book Appointment</h3>
-                                <p className="text-gray-600 mb-6">Schedule a visit with one of our expert doctors.</p>
-                                <div className="text-pink-600 font-semibold group-hover:translate-x-2 transition-transform inline-flex items-center">
-                                    Book Now &rarr;
-                                </div>
-                            </Card>
-                        </Link>
+                        {user?.role === 'admin' && (
+                            <Link to="/admin/doctors" className="group">
+                                <Card className="h-full hover:shadow-2xl transition-all duration-300 border-l-4 border-l-emerald-500 group-hover:-translate-y-1">
+                                    <h3 className="text-2xl font-bold mb-3 text-emerald-900">Manage Doctors</h3>
+                                    <p className="text-gray-600 mb-6">Register new doctors and view existing staff.</p>
+                                    <div className="text-emerald-600 font-semibold group-hover:translate-x-2 transition-transform inline-flex items-center">
+                                        Manage &rarr;
+                                    </div>
+                                </Card>
+                            </Link>
+                        )}
+
+                        {user?.role === 'doctor' && (
+                            <Link to="/doctor/schedule" className="group">
+                                <Card className="h-full hover:shadow-2xl transition-all duration-300 border-l-4 border-l-indigo-600 group-hover:-translate-y-1">
+                                    <h3 className="text-2xl font-bold mb-3 text-indigo-900">My Schedule</h3>
+                                    <p className="text-gray-600 mb-6">View your daily appointments and patient list.</p>
+                                    <div className="text-indigo-600 font-semibold group-hover:translate-x-2 transition-transform inline-flex items-center">
+                                        View Roadmap &rarr;
+                                    </div>
+                                </Card>
+                            </Link>
+                        )}
+
+                        {(user?.role === 'client' || !user?.role) && (
+                            <>
+                                <Link to="/my-pets" className="group">
+                                    <Card className="h-full hover:shadow-2xl transition-all duration-300 border-l-4 border-l-amber-500 group-hover:-translate-y-1">
+                                        <h3 className="text-2xl font-bold mb-3 text-amber-900">My Pets</h3>
+                                        <p className="text-gray-600 mb-6">View your registered pets in a detailed table format.</p>
+                                        <div className="text-amber-600 font-semibold group-hover:translate-x-2 transition-transform inline-flex items-center">
+                                            View Table &rarr;
+                                        </div>
+                                    </Card>
+                                </Link>
+
+                                <Link to="/add-pet" className="group">
+                                    <Card className="h-full hover:shadow-2xl transition-all duration-300 border-l-4 border-l-indigo-500 group-hover:-translate-y-1">
+                                        <h3 className="text-2xl font-bold mb-3 text-indigo-900">Add New Pet</h3>
+                                        <p className="text-gray-600 mb-6">Register a new pet to your account to track their medical history.</p>
+                                        <div className="text-indigo-600 font-semibold group-hover:translate-x-2 transition-transform inline-flex items-center">
+                                            Add Pet &rarr;
+                                        </div>
+                                    </Card>
+                                </Link>
+
+                                <Link to="/book-appointment" className="group">
+                                    <Card className="h-full hover:shadow-2xl transition-all duration-300 border-l-4 border-l-pink-500 group-hover:-translate-y-1">
+                                        <h3 className="text-2xl font-bold mb-3 text-indigo-900">Book Appointment</h3>
+                                        <p className="text-gray-600 mb-6">Schedule a visit with one of our expert doctors.</p>
+                                        <div className="text-pink-600 font-semibold group-hover:translate-x-2 transition-transform inline-flex items-center">
+                                            Book Now &rarr;
+                                        </div>
+                                    </Card>
+                                </Link>
+                            </>
+                        )}
 
                         <div className="group opacity-75 cursor-not-allowed">
                             <Card className="h-full border-l-4 border-l-gray-400 bg-gray-50/50">

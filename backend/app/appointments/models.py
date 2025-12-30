@@ -25,6 +25,7 @@ class Appointment(Base, TimestampMixin):
     pet_id: Mapped[int] = mapped_column(ForeignKey("pets.id"))
 
     date_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    duration_minutes: Mapped[int] = mapped_column(default=45)  # Default 45-minute appointments
     status: Mapped[AppointmentStatus] = mapped_column(
         Enum(AppointmentStatus),
         default=AppointmentStatus.PLANNED

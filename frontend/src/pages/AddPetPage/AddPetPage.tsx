@@ -24,17 +24,30 @@ export const AddPetPage = () => {
         setIsLoading(true);
         setError('');
 
+        const birthYear = new Date().getFullYear() - (age ? parseInt(age) : 0);
+        const birthDate = age ? `${birthYear}-01-01` : null;
+
         try {
             await api.post('/pets/', {
                 name,
-                type,
+                species: type,
                 breed: breed || null,
-                age: age ? parseInt(age) : null,
-                weight: weight ? parseFloat(weight) : null
+                birth_date: birthDate,
+                // weight is not in PetBase/PetCreate schemas, omitting it or need to add to backend. 
+                // Model doesn't have weight. Ignoring weight for now to prevent 422 extra field error.
             });
             navigate('/');
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Failed to add pet');
+            console.error(err);
+            const detail = err.response?.data?.detail;
+            if (Array.isArray(detail)) {
+                // Pydantic validation error
+                setError(detail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', '));
+            } else if (typeof detail === 'string') {
+                setError(detail);
+            } else {
+                setError('Failed to add pet');
+            }
         } finally {
             setIsLoading(false);
         }

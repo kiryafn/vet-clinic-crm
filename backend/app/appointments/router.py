@@ -46,3 +46,11 @@ async def update_notes(
         notes=notes_in.doctor_notes,
         doctor_id=current_doctor.id
     )
+
+@router.get("/public/doctor/{doctor_id}", response_model=list[schemas.AppointmentRead])
+async def get_doctor_appointments_public(
+    doctor_id: int,
+    db: SessionDep,
+    current_user: CurrentUser 
+):
+    return await service.get_doctor_appointments(db=db, doctor_id=doctor_id)

@@ -10,14 +10,36 @@ from app.doctors.models import Doctor
 from app.pets.models import Pet
 from app.users.models import User
 
-async def check_availability(db: AsyncSession, doctor_id: int, date_time: datetime) -> bool:
-    # Check if doctor has any appointment at this time
-    # This is a simple check. Real world would need duration check.
-    result = await db.execute(select(Appointment).filter(
-        Appointment.doctor_id == doctor_id,
-        Appointment.date_time == date_time
-    ))
-    return result.scalars().first() is None
+async def check_availability(db: AsyncSession, doctor_id: int, date_time: datetime, duration_minutes: int = 45) -> bool:
+    """
+    Check if doctor is available for an appointment at the given time.
+    Accounts for 45-minute appointment duration and checks for overlaps.
+    """
+    from datetime import timedelta
+    
+    # Calculate end time of the new appointment
+    new_start = date_time
+    new_end = date_time + timedelta(minutes=duration_minutes)
+    
+    # Get all appointments for this doctor
+    result = await db.execute(
+        select(Appointment).filter(
+            Appointment.doctor_id == doctor_id,
+            Appointment.status != 'cancelled'
+        )
+    )
+    existing_appointments = result.scalars().all()
+    
+    # Check for overlaps
+    for appt in existing_appointments:
+        appt_start = appt.date_time
+        appt_end = appt.date_time + timedelta(minutes=appt.duration_minutes)
+        
+        # Check if appointments overlap
+        if (new_start < appt_end and new_end > appt_start):
+            return False
+    
+    return True
 
 async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate, user_id: int) -> Appointment:
     # Check doctor
@@ -35,7 +57,8 @@ async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate
         raise HTTPException(status_code=404, detail="Pet not found or not yours")
 
     # Check availability
-    if not await check_availability(db, appointment_in.doctor_id, appointment_in.date_time):
+    duration = 45  # Default 45-minute appointments
+    if not await check_availability(db, appointment_in.doctor_id, appointment_in.date_time, duration):
         raise HTTPException(status_code=400, detail="Doctor is not available at this time")
 
     db_appointment = Appointment(
@@ -43,6 +66,7 @@ async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate
         doctor_id=appointment_in.doctor_id,
         pet_id=appointment_in.pet_id,
         date_time=appointment_in.date_time,
+        duration_minutes=45,  # Standard 45-minute appointments
         user_description=appointment_in.user_description
     )
     db.add(db_appointment)
