@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../../widgets/Header/Header';
 import { Button, Input, Card } from '../../shared/ui';
 import { api } from '../../shared/api/api';
-import { format, addMinutes, isAfter, isBefore, parseISO, set, startOfDay, isSameDay } from 'date-fns';
+import { format, addMinutes, isBefore, parseISO, set, startOfDay, isSameDay } from 'date-fns';
 
 interface Doctor {
     id: number;
@@ -102,7 +102,7 @@ export const BookAppointmentPage = () => {
 
         while (isBefore(currentTime, endTime)) {
             const slotStart = currentTime;
-            const slotEnd = addMinutes(slotStart, interval);
+            //const slotEnd = addMinutes(slotStart, interval);
 
             // Check overlap
             const isOccupied = appointments.some(app => {
