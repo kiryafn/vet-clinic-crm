@@ -1,56 +1,48 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
+from datetime import datetime
 
-from app.core.db import SessionDep
-from app.users.dependencies import CurrentUser, CurrentDoctor
+from app.core.db import get_db
+from app.users.dependencies import get_current_user
+from app.users.models import User
 from app.appointments import schemas, service
 
-router = APIRouter(prefix="/appointments", tags=["Appointments"])
+router = APIRouter()
 
-
-@router.post("/", response_model=schemas.AppointmentRead, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=schemas.AppointmentRead)
 async def create_appointment(
-        appointment_in: schemas.AppointmentCreate,
-        db: SessionDep,
-        current_user: CurrentUser
+    appointment_in: schemas.AppointmentCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return await service.create_appointment(db=db, appointment_in=appointment_in, user_id=current_user.id)
+    return await service.create_appointment(db, appointment_in)
 
-
-@router.get("/", response_model=list[schemas.AppointmentRead])
-async def get_my_appointments(
-        db: SessionDep,
-        current_user: CurrentUser
+@router.get("/", response_model=List[schemas.AppointmentRead])
+async def read_appointments(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return await service.get_my_appointments(db=db, user_id=current_user.id)
+    return await service.get_appointments(db, skip=skip, limit=limit)
 
-
-@router.get("/doctor", response_model=list[schemas.AppointmentRead])
-async def get_doctor_appointments(
-    db: SessionDep,
-    current_doctor: CurrentDoctor
-):
-    return await service.get_doctor_appointments(db=db, doctor_id=current_doctor.id)
-
-
-@router.patch("/{appointment_id}/notes", response_model=schemas.AppointmentRead)
-async def update_notes(
-    appointment_id: int,
-    notes_in: schemas.AppointmentUpdate,
-    db: SessionDep,
-    current_doctor: CurrentDoctor
-):
-    return await service.update_doctor_notes(
-        db=db, 
-        appointment_id=appointment_id, 
-        notes=notes_in.doctor_notes,
-        doctor_id=current_doctor.id
-    )
-
-@router.get("/public/doctor/{doctor_id}", response_model=list[schemas.AppointmentRead])
-async def get_doctor_appointments_public(
+@router.get("/slots", response_model=List[datetime])
+async def get_available_slots(
     doctor_id: int,
-    db: SessionDep,
-    current_user: CurrentUser 
+    date: datetime,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return await service.get_doctor_appointments(db=db, doctor_id=doctor_id)
+    return await service.get_day_slots(db, doctor_id, date)
+
+@router.get("/{appointment_id}", response_model=schemas.AppointmentRead)
+async def read_appointment(
+    appointment_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    appointment = await service.get_appointment(db, appointment_id)
+    if appointment is None:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    return appointment
