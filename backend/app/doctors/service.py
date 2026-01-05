@@ -1,11 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.users.models import User, UserRole
-from app.doctors.models import Doctor, Specialization
+from app.doctors.models import Doctor
 from app.doctors.schemas import DoctorCreate
 from app.core.security import get_password_hash
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 async def create_doctor(db: AsyncSession, doctor_in: DoctorCreate) -> Doctor:
-    # User creation handled here transactionally
     db_user = User(
         email=doctor_in.email,
         password_hash=get_password_hash(doctor_in.password),
@@ -14,11 +15,11 @@ async def create_doctor(db: AsyncSession, doctor_in: DoctorCreate) -> Doctor:
         role=UserRole.DOCTOR
     )
     db.add(db_user)
-    await db.flush() # to get user.id
+    await db.flush()
 
     db_doctor = Doctor(
         user_id=db_user.id,
-        specialization_id=doctor_in.specialization_id,
+        specialization=doctor_in.specialization,
         experience_years=doctor_in.experience_years,
         price=doctor_in.price,
         bio=doctor_in.bio
@@ -29,11 +30,7 @@ async def create_doctor(db: AsyncSession, doctor_in: DoctorCreate) -> Doctor:
     return db_doctor
 
 
-async def get_doctors(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[Doctor]:
-    from sqlalchemy import select
-    # Eager load user relationship to get names, etc.
-    from sqlalchemy.orm import selectinload
-    
-    query = select(Doctor).options(selectinload(Doctor.user), selectinload(Doctor.specialization)).offset(skip).limit(limit)
+async def get_doctors(db: AsyncSession, skip: int = 0, limit: int = 5) -> list[Doctor]:
+    query = select(Doctor).offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()

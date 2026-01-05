@@ -1,30 +1,20 @@
-from typing import TYPE_CHECKING
-
-from sqlalchemy import String, Integer, ForeignKey, Text
+from sqlalchemy import String, Integer, ForeignKey, Text, Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from app.core.db import Base
 from app.core.models import TimestampMixin
-from app.users import User
-
+from typing import TYPE_CHECKING
+from app.core.db import Base
+import enum
 if TYPE_CHECKING:
-    from app.users import User
+    from app.users.models import User
     from app.appointments.models import Appointment
 
-
-class Specialization(Base):
-    __tablename__ = "specializations"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-
-    name_ru: Mapped[str] = mapped_column(String(100), unique=True)
-    name_en: Mapped[str] = mapped_column(String(100), unique=True)
-
-    description_ru: Mapped[str | None] = mapped_column(Text, nullable=True)
-    description_en: Mapped[str | None] = mapped_column(Text, nullable=True)
-
-    doctors: Mapped[list["Doctor"]] = relationship(back_populates="specialization")
-
+class DoctorSpecialization(str, enum.Enum):
+    OPHTHALMOLOGIST = "OPHTHALMOLOGIST"
+    DERMATOLOGIST = "DERMATOLOGIST"
+    CARDIOLOGIST = "CARDIOLOGIST"
+    THERAPIST = "THERAPIST"
+    SURGEON = "SURGEON"
+    DENTIST = "DENTIST"
 
 class Doctor(Base, TimestampMixin):
     __tablename__ = "doctors"
@@ -32,17 +22,14 @@ class Doctor(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
-    user: Mapped["User"] = relationship(lazy="joined")
+    user: Mapped["User"] = relationship(back_populates="doctor_profile", lazy="joined")
 
+    full_name: Mapped[str] = mapped_column(String(100))
     experience_years: Mapped[int] = mapped_column(Integer, default=0)
+    phone_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
-    price: Mapped[int] = mapped_column(Integer, default=1000)
+    price: Mapped[int] = mapped_column(Integer, default=50)
 
-    specialization_id: Mapped[int] = mapped_column(ForeignKey("specializations.id"))
-    specialization: Mapped["Specialization"] = relationship(back_populates="doctors", lazy="joined")
+    specialization: Mapped[DoctorSpecialization] = mapped_column(SqlEnum(DoctorSpecialization), default=DoctorSpecialization.THERAPIST)
 
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="doctor")
-
-    @property
-    def full_name(self) -> str:
-        return self.user.full_name if self.user else "Unknown"

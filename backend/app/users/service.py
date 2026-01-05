@@ -1,5 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.clients.models import Client
 from app.users.models import User, UserRole
@@ -7,9 +8,14 @@ from app.users.schemas import UserCreate
 from app.core.security import get_password_hash
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
-    result = await db.execute(select(User).filter(User.email == email))
-    return result.scalars().first()
 
+    query = select(User).options(
+        selectinload(User.client_profile),
+        selectinload(User.doctor_profile)
+    ).filter(User.email == email)
+
+    result = await db.execute(query)
+    return result.scalars().first()
 
 async def create_user(db: AsyncSession, user_in: UserCreate):
     user = User(

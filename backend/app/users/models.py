@@ -21,11 +21,7 @@ class User(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String)
-    full_name: Mapped[str] = mapped_column(String(100))
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.CLIENT)
-
-    is_active: Mapped[bool] = mapped_column(default=True)
-    is_superuser: Mapped[bool] = mapped_column(default=False)
 
     doctor_profile: Mapped["Doctor | None"] = relationship(back_populates="user", uselist=False)
     client_profile: Mapped["Client | None"] = relationship(back_populates="user", uselist=False)

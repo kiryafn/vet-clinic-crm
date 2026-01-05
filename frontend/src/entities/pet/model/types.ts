@@ -23,18 +23,16 @@ export interface Pet {
     name: string;
     species: PetSpecies | string;
     breed?: string | null;
-    birth_date?: string | null; // ISO Date YYYY-MM-DD
-    notes?: string | null;
+    birth_date?: string | null;
     age?: {
         years: number;
         months: number;
     };
 }
 
-export interface PetCreateDto {
+export interface PetCreat {
     name: string;
     species: PetSpecies | string;
     breed?: string | null;
     birth_date?: string | null;
-    notes?: string;
 }

@@ -1,24 +1,39 @@
-from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.orm import Session
-
-from app.core.db import get_db, SessionDep
+from fastapi import APIRouter, status, HTTPException
+from app.core.db import SessionDep
 from app.users.dependencies import CurrentUser
-from app.users.models import User
 from app.pets import schemas, service as pet_service
 
 router = APIRouter(prefix="/pets", tags=["Pets"])
 
+
 @router.post("/", response_model=schemas.PetRead, status_code=status.HTTP_201_CREATED)
 async def create_pet(
-    pet: schemas.PetCreate,
-    db: SessionDep,
-    current_user: CurrentUser
+        pet: schemas.PetCreate,
+        db: SessionDep,
+        current_user: CurrentUser
 ):
-    return await pet_service.create_pet(db=db, pet=pet, owner_id=current_user.id)
+    if not current_user.client_profile:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only users with Client profile can add pets. Doctors cannot have pets on this account."
+        )
+
+    return await pet_service.create_pet(
+        db=db,
+        pet=pet,
+        owner_id=current_user.client_profile.id
+    )
+
 
 @router.get("/", response_model=list[schemas.PetRead])
 async def get_my_pets(
-    db: SessionDep,
-    current_user: CurrentUser
+        db: SessionDep,
+        current_user: CurrentUser
 ):
-    return await pet_service.get_pets_by_owner(db=db, owner_id=current_user.id)
+    if not current_user.client_profile:
+        return []
+
+    return await pet_service.get_pets_by_owner(
+        db=db,
+        owner_id=current_user.client_profile.id
+    )
