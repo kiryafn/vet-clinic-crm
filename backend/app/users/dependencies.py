@@ -57,13 +57,12 @@ async def get_current_doctor(
             detail="Not a doctor"
         )
     
-    # Need to fetch Doctor model
     result = await db.execute(select(Doctor).filter(Doctor.user_id == current_user.id))
     doctor = result.scalars().first()
     
     if not doctor:
          raise HTTPException(
-            status_code=404,  # Should not happen if data is consistent
+            status_code=404,
             detail="Doctor profile not found"
         )
     return doctor

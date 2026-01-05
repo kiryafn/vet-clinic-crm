@@ -1,3 +1,4 @@
+# backend/app/users/router.py
 from datetime import timedelta
 from typing import Annotated
 
@@ -12,19 +13,8 @@ from app.users.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-
-@router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
-async def register(user: schemas.UserCreate, db: SessionDep):
-    db_user = await service.get_user_by_email(db, email=user.email)
-
-    if db_user:
-        raise HTTPException(
-            status_code=400,
-            detail="Email already registered"
-        )
-
-    return await service.create_user(db=db, user=user)
-
+# --- УДАЛЕН МЕТОД REGISTER ---
+# Он переехал в clients/router.py
 
 @router.post("/login", response_model=schemas.Token)
 async def login(
@@ -47,6 +37,7 @@ async def login(
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 @router.get("/me", response_model=schemas.UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):

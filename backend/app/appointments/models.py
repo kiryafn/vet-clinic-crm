@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Text, DateTime, Enum
 
-from app.clients.models import Client
 from app.core.models import TimestampMixin
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
@@ -10,7 +9,7 @@ import enum
 if TYPE_CHECKING:
     from app.doctors.models import Doctor
     from app.pets.models import Pet
-    from app.users.models import User
+    from app.clients.models import Client
 
 
 class AppointmentStatus(str, enum.Enum):
