@@ -59,7 +59,7 @@ export const HomePage = () => {
                             </Link>
                         )}
 
-                        {(user?.role === 'client' || !user?.role) && (
+                        {(user?.role === 'clients' || !user?.role) && (
                             <>
                                 <Link to="/my-pets" className="group">
                                     <Card className="h-full hover:shadow-2xl transition-all duration-300 border-l-4 border-l-amber-500 group-hover:-translate-y-1">

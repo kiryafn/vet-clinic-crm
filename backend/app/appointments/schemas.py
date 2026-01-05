@@ -7,24 +7,25 @@ from app.pets.schemas import PetRead
 from app.doctors.schemas import DoctorRead
 
 
-class AppointmentBase(BaseModel):
-    user_description: str | None = None
 
-
-class AppointmentCreate(AppointmentBase):
+class AppointmentCreate(BaseModel):
     doctor_id: int
     pet_id: int
+    user_id: int
     date_time: datetime
+    user_description: str | None = None
 
 class AppointmentUpdate(BaseModel):
     doctor_notes: str
 
-class AppointmentRead(AppointmentBase):
+class AppointmentRead(BaseModel):
     id: int
     status: AppointmentStatus
     date_time: datetime
     duration_minutes: int
     doctor_notes : str | None
+    user_description: str | None = None
+
 
     user: UserResponse
     doctor: DoctorRead

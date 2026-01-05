@@ -16,7 +16,6 @@ export const PetSpecies = {
     OTHER: 'OTHER'
 } as const;
 
-// Это эквивалентно: type PetSpecies = 'DOG' | 'CAT' | 'BIRD' ...
 export type PetSpecies = (typeof PetSpecies)[keyof typeof PetSpecies];
 
 export interface Pet {
@@ -32,7 +31,7 @@ export interface Pet {
     };
 }
 
-export interface CreatePetPayload {
+export interface PetCreateDto {
     name: string;
     species: PetSpecies | string;
     breed?: string | null;

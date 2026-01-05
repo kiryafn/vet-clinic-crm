@@ -1,5 +1,5 @@
 import { api } from '../../../shared/api/api';
-import type { Pet, CreatePetPayload } from '../model/types';
+import type { Pet, PetCreateDto } from '../model/types';
 
 export const petApi = {
     getAll: async (): Promise<Pet[]> => {
@@ -7,7 +7,7 @@ export const petApi = {
         return response.data;
     },
 
-    create: async (payload: CreatePetPayload): Promise<Pet> => {
+    create: async (payload: PetCreateDto): Promise<Pet> => {
         const response = await api.post<Pet>('/pets/', payload);
         return response.data;
     }

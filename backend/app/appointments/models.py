@@ -1,12 +1,17 @@
-import enum
-from datetime import datetime, timezone
-from sqlalchemy import ForeignKey, Text, DateTime, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.core.db import Base
+from sqlalchemy import ForeignKey, Text, DateTime, Enum
+
+from app.clients.models import Client
 from app.core.models import TimestampMixin
-from app.users.models import User
-from app.doctors.models import Doctor
-from app.pets.models import Pet
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING
+from app.core.db import Base
+import enum
+if TYPE_CHECKING:
+    from app.doctors.models import Doctor
+    from app.pets.models import Pet
+    from app.users.models import User
+
 
 class AppointmentStatus(str, enum.Enum):
     PLANNED = "planned"
@@ -17,25 +22,23 @@ class Appointment(Base, TimestampMixin):
     __tablename__ = "appointments"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-
-    doctor_id: Mapped[int] = mapped_column(ForeignKey("doctors.id"))
-
-    pet_id: Mapped[int] = mapped_column(ForeignKey("pets.id"))
-
     date_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     duration_minutes: Mapped[int] = mapped_column(default=45)  # Default 45-minute appointments
-    status: Mapped[AppointmentStatus] = mapped_column(
-        Enum(AppointmentStatus),
-        default=AppointmentStatus.PLANNED
-    )
-    user_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[AppointmentStatus] = mapped_column(Enum(AppointmentStatus), default=AppointmentStatus.PLANNED)
+    reason: Mapped[str] = mapped_column(Text)
     doctor_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    user: Mapped["User"] = relationship()
-    doctor: Mapped["Doctor"] = relationship()
-    pet: Mapped["Pet"] = relationship()
+    client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
+    client: Mapped["Client"] = relationship("Client", back_populates="appointments")
 
-    def __repr__(self) -> str:
-        return f"<Appointment {self.id} ({self.date_time})>"
+    doctor_id: Mapped[int] = mapped_column(ForeignKey("doctors.id"))
+    doctor: Mapped["Doctor"] = relationship("Doctor", back_populates="appointments")
+
+    pet_id: Mapped[int] = mapped_column(ForeignKey("pets.id"))
+    pet: Mapped["Pet"] = relationship("Pet", back_populates="appointments")
+
+    def cancel(self):
+        self.status = AppointmentStatus.CANCELLED
+
+    def complete(self):
+        self.status = AppointmentStatus.COMPLETED

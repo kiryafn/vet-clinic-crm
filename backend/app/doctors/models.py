@@ -1,9 +1,15 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import String, Integer, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
 from app.core.models import TimestampMixin
 from app.users import User
+
+if TYPE_CHECKING:
+    from app.users import User
+    from app.appointments.models import Appointment
 
 
 class Specialization(Base):
@@ -26,22 +32,17 @@ class Doctor(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    user: Mapped["User"] = relationship(lazy="joined")
 
-    specialization_id: Mapped[int] = mapped_column(ForeignKey("specializations.id"))
     experience_years: Mapped[int] = mapped_column(Integer, default=0)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
-    price: Mapped[int] = mapped_column(Integer, default=1000)  # Цена за прием (в копейках или целых единицах)
+    price: Mapped[int] = mapped_column(Integer, default=1000)
 
-    user: Mapped["User"] = relationship(lazy="joined")
+    specialization_id: Mapped[int] = mapped_column(ForeignKey("specializations.id"))
     specialization: Mapped["Specialization"] = relationship(back_populates="doctors", lazy="joined")
+
+    appointments: Mapped[list["Appointment"]] = relationship(back_populates="doctor")
 
     @property
     def full_name(self) -> str:
         return self.user.full_name if self.user else "Unknown"
-
-    @property
-    def specialization_name(self) -> str:
-        return self.specialization.name_ru if self.specialization else "Unknown"
-    
-    def __repr__(self) -> str:
-        return f"<Doctor {self.id} (User: {self.user_id})>"

@@ -58,7 +58,7 @@ async def async_client():
 async def test_full_flow(async_client):
     # 1. Register Client
     client_data = {
-        "email": "client@example.com",
+        "email": "clients@example.com",
         "password": "password123",
         "full_name": "John Doe",
         "phone_number": "1234567890"

@@ -1,12 +1,13 @@
-from datetime import date
-
-from sqlalchemy import String, Integer, ForeignKey, Text, Date
+from sqlalchemy import String, ForeignKey, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from app.core.db import Base
 from app.core.models import TimestampMixin
+from typing import TYPE_CHECKING
 from app.users.models import User
-
+from app.core.db import Base
+from datetime import date
+if TYPE_CHECKING:
+    from app.clients.models import Client
+    from app.appointments.models import Appointment
 
 class Pet(Base, TimestampMixin):
     __tablename__ = "pets"
@@ -16,10 +17,11 @@ class Pet(Base, TimestampMixin):
     species: Mapped[str] = mapped_column(String(50))
     breed: Mapped[str | None] = mapped_column(String(50), nullable=True)
     birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    owner: Mapped["User"] = relationship(back_populates="pets")
+    owner_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
+    owner: Mapped["Client"] = relationship(back_populates="pets")
+
+    appointments: Mapped[list["Appointment"]] = relationship(back_populates="pet")
 
     @property
     def age(self) -> dict | None:
@@ -37,6 +39,3 @@ class Pet(Base, TimestampMixin):
             months += 12
 
         return {"years": years, "months": months}
-    
-    def __repr__(self) -> str:
-        return f"<Pet {self.name} ({self.species})>"
