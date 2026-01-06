@@ -10,5 +10,9 @@ export const petApi = {
     create: async (payload: PetCreate): Promise<Pet> => {
         const response = await api.post<Pet>('/pets/', payload);
         return response.data;
+    },
+
+    delete: async (id: number): Promise<void> => {
+        await api.delete(`/pets/${id}`);
     }
 };

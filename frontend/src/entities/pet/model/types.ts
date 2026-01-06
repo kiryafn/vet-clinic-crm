@@ -30,7 +30,7 @@ export interface Pet {
     };
 }
 
-export interface PetCreat {
+export interface PetCreate {
     name: string;
     species: PetSpecies | string;
     breed?: string | null;

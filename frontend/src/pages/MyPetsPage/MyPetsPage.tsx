@@ -44,10 +44,26 @@ export const MyPetsPage = () => {
 
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-3xl font-bold text-gray-800">My Pets</h1>
-                    {/* Место для кнопки AddPetButton */}
+                    {/* Placeholder for AddPetButton if needed */}
                 </div>
 
-                <PetList pets={pets} isLoading={isLoading} />
+                <PetList
+                    pets={pets}
+                    isLoading={isLoading}
+                    onDelete={async (id) => {
+                        if (!window.confirm('Are you sure you want to delete this pet?')) return;
+                        try {
+                            await import('../../entities/pet/api/petApi').then(m => m.petApi.delete(id));
+                            setPets(prev => prev.filter(p => p.id !== id));
+                        } catch (err) {
+                            console.error("Failed to delete pet", err);
+                            alert("Failed to delete pet");
+                        }
+                    }}
+                    onUpdate={(id) => {
+                        alert(`Update logic for pet ${id} coming soon!`);
+                    }}
+                />
             </div>
         </div>
     );

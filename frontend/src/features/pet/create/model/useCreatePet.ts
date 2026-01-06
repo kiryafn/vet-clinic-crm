@@ -7,7 +7,7 @@ interface CreatePetFormValues {
     name: string;
     species: PetSpecies;
     breed: string;
-    age: string; // В форме мы вводим возраст числом (строкой), а не дату
+    age: string; // YYYY-MM date string
     weight: string; // Пока игнорируем или сохраним в notes, если бэк не поддерживает
 }
 
@@ -25,8 +25,8 @@ export const useCreatePet = () => {
             // (если поле пустое, отправляем null)
             let birthDate = null;
             if (values.age) {
-                const birthYear = new Date().getFullYear() - parseInt(values.age);
-                birthDate = `${birthYear}-01-01`;
+                // values.age is now YYYY-MM from input type="month"
+                birthDate = `${values.age}-01`;
             }
 
             await petApi.create({

@@ -5,9 +5,11 @@ import { Card } from '../../../../shared/ui';
 interface PetListProps {
     pets: Pet[];
     isLoading: boolean;
+    onDelete: (id: number) => void;
+    onUpdate: (id: number) => void;
 }
 
-export const PetList = ({ pets, isLoading }: PetListProps) => {
+export const PetList = ({ pets, isLoading, onDelete, onUpdate }: PetListProps) => {
     if (isLoading) {
         return <div className="text-center py-12 text-gray-500">Loading your pets...</div>;
     }
@@ -30,12 +32,17 @@ export const PetList = ({ pets, isLoading }: PetListProps) => {
                             <th className="px-6 py-4 font-bold text-gray-700">Species</th>
                             <th className="px-6 py-4 font-bold text-gray-700">Breed</th>
                             <th className="px-6 py-4 font-bold text-gray-700">Age</th>
-                            <th className="px-6 py-4 font-bold text-gray-700">Notes</th>
+                            <th className="px-6 py-4 font-bold text-gray-700 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {pets.map((pet) => (
-                            <PetRow key={pet.id} pet={pet} />
+                            <PetRow
+                                key={pet.id}
+                                pet={pet}
+                                onDelete={() => onDelete(pet.id)}
+                                onUpdate={() => onUpdate(pet.id)}
+                            />
                         ))}
                     </tbody>
                 </table>

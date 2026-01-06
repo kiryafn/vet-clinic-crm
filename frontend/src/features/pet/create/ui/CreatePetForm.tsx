@@ -54,11 +54,13 @@ export const CreatePetForm = () => {
 
                 <div className="flex gap-4">
                     <Input
-                        label="Age (years)"
-                        type="number"
-                        value={age}
+                        label="Date of Birth (Month/Year)"
+                        type="month"
+                        value={age} // We reuse 'age' state variable for date string to minimize refactor, or should rename? Let's rename in next step if confusing. 
+                        // Actually better to keep simple now. 
                         onChange={(e) => setAge(e.target.value)}
                         className="w-full"
+                        required
                     />
                     <Input
                         label="Weight (kg)"

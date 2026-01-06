@@ -15,3 +15,12 @@ async def get_pets_by_owner(db: AsyncSession, owner_id: int) -> list[Pet]:
     stmt = select(Pet).where(Pet.owner_id == owner_id)
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+
+async def get_pet(db: AsyncSession, pet_id: int) -> Pet | None:
+    return await db.get(Pet, pet_id)
+
+
+async def delete_pet(db: AsyncSession, pet: Pet) -> None:
+    await db.delete(pet)
+    await db.commit()

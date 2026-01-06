@@ -1,15 +1,17 @@
-import type {Pet} from '../../model/types';
+import type { Pet } from '../../model/types';
 import clsx from 'clsx';
 
 interface PetRowProps {
     pet: Pet;
+    onDelete: () => void;
+    onUpdate: () => void;
 }
 
-export const PetRow = ({ pet }: PetRowProps) => {
+export const PetRow = ({ pet, onDelete, onUpdate }: PetRowProps) => {
     const badgeColor =
         pet.species.toLowerCase() === 'dog' ? 'bg-blue-100 text-blue-700' :
-        pet.species.toLowerCase() === 'cat' ? 'bg-pink-100 text-pink-700' :
-        'bg-gray-100 text-gray-700';
+            pet.species.toLowerCase() === 'cat' ? 'bg-pink-100 text-pink-700' :
+                'bg-gray-100 text-gray-700';
 
     return (
         <tr className="border-b hover:bg-gray-50 transition-colors">
@@ -23,8 +25,19 @@ export const PetRow = ({ pet }: PetRowProps) => {
             <td className="px-6 py-4 text-gray-600">
                 {pet.age ? `${pet.age.years}y ${pet.age.months}m` : '-'}
             </td>
-            <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                {pet.notes || '-'}
+            <td className="px-6 py-4 text-right space-x-2">
+                <button
+                    onClick={onUpdate}
+                    className="text-indigo-600 hover:text-indigo-800 font-medium text-sm transition-colors"
+                >
+                    Update
+                </button>
+                <button
+                    onClick={onDelete}
+                    className="text-red-500 hover:text-red-700 font-medium text-sm transition-colors"
+                >
+                    Delete
+                </button>
             </td>
         </tr>
     );
