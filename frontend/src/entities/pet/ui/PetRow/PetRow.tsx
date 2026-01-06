@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Pet } from '../../model/types';
 
 interface PetRowProps {
@@ -7,6 +8,8 @@ interface PetRowProps {
 }
 
 export const PetRow = ({ pet, onDelete, onUpdate }: PetRowProps) => {
+    const { t } = useTranslation();
+
     // Determine icon based on species
     const getSpeciesIcon = (species: string) => {
         const s = species.toLowerCase();
@@ -43,17 +46,17 @@ export const PetRow = ({ pet, onDelete, onUpdate }: PetRowProps) => {
             </td>
             <td className="px-6 py-5">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ${badgeClass}`}>
-                    {pet.species}
+                    {t(`pet.species.${speciesLower}`, pet.species as string)}
                 </span>
             </td>
             <td className="px-6 py-5 text-sm text-gray-600 font-medium">
-                {pet.breed || <span className="text-gray-400 italic">Unknown</span>}
+                {pet.breed || <span className="text-gray-400 italic">{t('pet.table.unknown')}</span>}
             </td>
             <td className="px-6 py-5 text-sm text-gray-600 font-medium">
                 {pet.age ? (
                     <span>
-                        <span className="text-gray-900 font-bold">{pet.age.years}</span> yrs{' '}
-                        <span className="text-gray-500">{pet.age.months} mos</span>
+                        <span className="text-gray-900 font-bold">{pet.age.years}</span> {t('pet.table.yrs')}{' '}
+                        <span className="text-gray-500">{pet.age.months} {t('pet.table.mos')}</span>
                     </span>
                 ) : (
                     <span className="text-gray-400">-</span>

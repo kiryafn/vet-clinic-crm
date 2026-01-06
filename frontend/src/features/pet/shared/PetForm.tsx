@@ -1,4 +1,5 @@
 import { type FormEvent, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../../../shared/ui';
 import { PetSpecies } from '../../../entities/pet';
 
@@ -22,7 +23,8 @@ interface PetFormProps {
     onCancel?: () => void;
 }
 
-export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel = 'Save', onCancel }: PetFormProps) => {
+export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCancel }: PetFormProps) => {
+    const { t } = useTranslation();
     const [name, setName] = useState(initialValues?.name || '');
     const [species, setSpecies] = useState<PetSpecies>(initialValues?.species as PetSpecies || PetSpecies.DOG);
     const [breed, setBreed] = useState(initialValues?.breed || '');
@@ -53,36 +55,36 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel = 'Sav
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
-                label="Pet Name"
+                label={t('pet.form.name')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                placeholder="e.g. Buddy"
+                placeholder={t('pet.form.placeholder_name')}
             />
 
             <div className="input-wrapper">
-                <label className="input-label block text-sm font-medium text-gray-700 mb-1">Pet Type</label>
+                <label className="input-label block text-sm font-medium text-gray-700 mb-1">{t('pet.form.type')}</label>
                 <select
                     value={species}
                     onChange={(e) => setSpecies(e.target.value as PetSpecies)}
                     className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
                 >
                     {Object.values(PetSpecies).map((s) => (
-                        <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>
+                        <option key={s} value={s}>{t(`pet.species.${s.toLowerCase()}`, s.charAt(0) + s.slice(1).toLowerCase())}</option>
                     ))}
                 </select>
             </div>
 
             <Input
-                label="Breed"
+                label={t('pet.form.breed')}
                 value={breed}
                 onChange={(e) => setBreed(e.target.value)}
-                placeholder="e.g. Golden Retriever"
+                placeholder={t('pet.form.placeholder_breed')}
             />
 
             <div className="flex gap-4">
                 <Input
-                    label="Date of Birth (Month/Year)"
+                    label={t('pet.form.birth_date')}
                     type="month"
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
@@ -90,7 +92,7 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel = 'Sav
                     required
                 />
                 <Input
-                    label="Weight (kg)"
+                    label={t('pet.form.weight')}
                     type="number"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
@@ -105,11 +107,11 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel = 'Sav
                         variant="outline"
                         onClick={onCancel}
                     >
-                        Cancel
+                        {t('pet.form.cancel')}
                     </Button>
                 )}
                 <Button type="submit" isLoading={isLoading}>
-                    {submitLabel}
+                    {submitLabel || t('pet.form.save')}
                 </Button>
             </div>
         </form>

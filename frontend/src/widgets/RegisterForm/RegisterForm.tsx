@@ -15,16 +15,16 @@ export const RegisterForm = () => {
 
     const validate = () => {
         if (!email || !password || !fullName) {
-            setValidationError('Required fields missing');
+            setValidationError(t('auth.validation.required'));
             return false;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            setValidationError('Invalid email format');
+            setValidationError(t('auth.validation.email'));
             return false;
         }
         if (password.length < 6) {
-            setValidationError('Password must be at least 6 characters');
+            setValidationError(t('auth.validation.password_length'));
             return false;
         }
         setValidationError('');
@@ -52,7 +52,7 @@ export const RegisterForm = () => {
         >
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {error && (
-                    <Alert variant="error" title="Registration Failed">
+                    <Alert variant="error" title={t('auth.alert.register_failed')}>
                         {error}
                     </Alert>
                 )}
@@ -65,7 +65,7 @@ export const RegisterForm = () => {
                         setValidationError('');
                     }}
                     required
-                    placeholder="John Doe"
+                    placeholder={t('auth.placeholder.name')}
                 />
                 <Input
                     label={t('auth.register.email')}
@@ -76,13 +76,13 @@ export const RegisterForm = () => {
                         setValidationError('');
                     }}
                     required
-                    placeholder="name@example.com"
+                    placeholder={t('auth.placeholder.email')}
                 />
                 <Input
                     label={t('auth.register.phone')}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+1 (555) 000-0000"
+                    placeholder={t('auth.placeholder.phone')}
                 />
                 <Input
                     label={t('auth.register.password')}
@@ -93,7 +93,7 @@ export const RegisterForm = () => {
                         setValidationError('');
                     }}
                     required
-                    placeholder="Min 6 characters"
+                    placeholder={t('auth.placeholder.min_chars')}
                 />
 
                 <Button type="submit" isLoading={isLoading} className="w-full">

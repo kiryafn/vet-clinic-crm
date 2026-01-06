@@ -12,12 +12,12 @@ export const LoginForm = () => {
 
     const validate = () => {
         if (!email || !password) {
-            setValidationError('All fields are required');
+            setValidationError(t('auth.validation.required'));
             return false;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            setValidationError('Invalid email format');
+            setValidationError(t('auth.validation.email'));
             return false;
         }
         setValidationError('');
@@ -39,7 +39,7 @@ export const LoginForm = () => {
         >
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {error && (
-                    <Alert variant="error" title="Login Failed">
+                    <Alert variant="error" title={t('auth.alert.login_failed')}>
                         {error}
                     </Alert>
                 )}
@@ -53,7 +53,7 @@ export const LoginForm = () => {
                         setValidationError('');
                     }}
                     required
-                    placeholder="name@example.com"
+                    placeholder={t('auth.placeholder.email')}
                 />
                 <Input
                     label={t('auth.login.password')}
@@ -64,7 +64,7 @@ export const LoginForm = () => {
                         setValidationError('');
                     }}
                     required
-                    placeholder="••••••••"
+                    placeholder={t('auth.placeholder.password')}
                 />
 
                 <Button type="submit" isLoading={isLoading} className="w-full">

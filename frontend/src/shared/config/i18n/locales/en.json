@@ -67,6 +67,79 @@
       "errors": {
         "invalid_email": "Please enter a valid email address"
       }
+    },
+    "alert": {
+      "login_failed": "Login Failed",
+      "register_failed": "Registration Failed"
+    },
+    "validation": {
+      "required": "All fields are required",
+      "email": "Invalid email format",
+      "password_length": "Password must be at least 6 characters"
+    },
+    "placeholder": {
+      "email": "name@example.com",
+      "password": "••••••••",
+      "name": "John Doe",
+      "phone": "+1 (555) 000-0000",
+      "min_chars": "Min 6 characters"
+    }
+  },
+  "pet": {
+    "list_title": "My Pets",
+    "list_subtitle": "Manage your furry friends profile and details",
+    "back_home": "Back to Home",
+    "add_new": "Add New Pet",
+    "no_pets_title": "No pets added yet",
+    "no_pets_desc": "Add your first pet to get started!",
+    "loading": "Loading your pets...",
+    "table": {
+      "profile": "Pet Profile",
+      "species": "Species",
+      "breed": "Breed",
+      "age": "Age",
+      "yrs": "yrs",
+      "mos": "mos",
+      "actions": "Actions",
+      "unknown": "Unknown"
+    },
+    "form": {
+      "title_add": "Add New Pet",
+      "title_edit": "Edit Pet",
+      "name": "Pet Name",
+      "type": "Pet Type",
+      "breed": "Breed",
+      "birth_date": "Date of Birth (Month/Year)",
+      "weight": "Weight (kg)",
+      "placeholder_name": "e.g. Buddy",
+      "placeholder_breed": "e.g. Golden Retriever",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "add": "Add Pet"
+    },
+    "messages": {
+      "delete_confirm": "Are you sure you want to delete this pet?",
+      "delete_fail": "Failed to delete pet",
+      "update_fail": "Failed to update pet",
+      "add_fail": "Failed to add pet",
+      "invalid_date": "Invalid date format. Please use YYYY-MM."
+    },
+    "species": {
+      "dog": "Dog",
+      "cat": "Cat",
+      "bird": "Bird",
+      "fish": "Fish",
+      "rabbit": "Rabbit",
+      "hamster": "Hamster",
+      "guinea_pig": "Guinea Pig",
+      "mouse_rat": "Mouse/Rat",
+      "ferret": "Ferret",
+      "reptile": "Reptile",
+      "amphibian": "Amphibian",
+      "horse": "Horse",
+      "livestock": "Livestock",
+      "exotic": "Exotic",
+      "other": "Other"
     }
   }
 }
