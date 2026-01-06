@@ -3,6 +3,7 @@ from app.users.models import UserRole
 
 class UserResponse(BaseModel):
     id: int
+    email: str
     role: UserRole
     full_name: str | None = None
 
