@@ -11,31 +11,37 @@ interface PetListProps {
 
 export const PetList = ({ pets, isLoading, onDelete, onUpdate }: PetListProps) => {
     if (isLoading) {
-        return <div className="text-center py-12 text-gray-500">Loading your pets...</div>;
+        return (
+            <div className="flex justify-center items-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+        );
     }
 
     if (pets.length === 0) {
         return (
-            <Card className="text-center py-12 text-gray-500 italic">
-                You haven't added any pets yet.
-            </Card>
+            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
+                <div className="text-6xl mb-4">🐾</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No pets added yet</h3>
+                <p className="text-gray-500">Add your first pet to get started!</p>
+            </div>
         );
     }
 
     return (
-        <Card className="overflow-hidden p-0">
+        <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
-                    <thead className="bg-gray-100 border-b">
-                        <tr>
-                            <th className="px-6 py-4 font-bold text-gray-700">Name</th>
-                            <th className="px-6 py-4 font-bold text-gray-700">Species</th>
-                            <th className="px-6 py-4 font-bold text-gray-700">Breed</th>
-                            <th className="px-6 py-4 font-bold text-gray-700">Age</th>
-                            <th className="px-6 py-4 font-bold text-gray-700 text-right">Actions</th>
+                    <thead>
+                        <tr className="bg-gray-50/50 border-b border-gray-100">
+                            <th className="px-8 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Pet Profile</th>
+                            <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Species</th>
+                            <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Breed</th>
+                            <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Age</th>
+                            <th className="px-8 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-50">
                         {pets.map((pet) => (
                             <PetRow
                                 key={pet.id}
@@ -47,6 +53,6 @@ export const PetList = ({ pets, isLoading, onDelete, onUpdate }: PetListProps) =
                     </tbody>
                 </table>
             </div>
-        </Card>
+        </div>
     );
 };

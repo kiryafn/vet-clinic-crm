@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.pets.models import Pet
-from app.pets.schemas import PetCreate
+from app.pets.schemas import PetCreate, PetUpdate
 
 async def create_pet(db: AsyncSession, pet: PetCreate, owner_id: int) -> Pet:
     db_pet = Pet(**pet.model_dump(exclude_unset=True), owner_id=owner_id)
@@ -24,3 +24,12 @@ async def get_pet(db: AsyncSession, pet_id: int) -> Pet | None:
 async def delete_pet(db: AsyncSession, pet: Pet) -> None:
     await db.delete(pet)
     await db.commit()
+
+async def update_pet(db: AsyncSession, pet: Pet, pet_update: PetUpdate) -> Pet:
+    update_data = pet_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(pet, key, value)
+    
+    await db.commit()
+    await db.refresh(pet)
+    return pet

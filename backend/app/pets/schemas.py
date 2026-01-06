@@ -10,6 +10,12 @@ class PetCreate(BaseModel):
     breed: str | None = None
     birth_date: date | None = None
 
+class PetUpdate(BaseModel):
+    name: str | None = None
+    species: PetSpecies | None = None
+    breed: str | None = None
+    birth_date: date | None = None
+
 class PetRead(BaseModel):
     id: int
     name: str

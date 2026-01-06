@@ -56,3 +56,23 @@ async def delete_pet(
         raise HTTPException(status_code=403, detail="Not authorized to delete this pet")
 
     await pet_service.delete_pet(db, pet)
+
+
+@router.patch("/{pet_id}", response_model=schemas.PetRead)
+async def update_pet(
+        pet_id: int,
+        pet_update: schemas.PetUpdate,
+        db: SessionDep,
+        current_user: CurrentUser
+):
+    if not current_user.client_profile:
+         raise HTTPException(status_code=403, detail="Not authorized")
+
+    pet = await pet_service.get_pet(db, pet_id)
+    if not pet:
+        raise HTTPException(status_code=404, detail="Pet not found")
+
+    if pet.owner_id != current_user.client_profile.id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this pet")
+
+    return await pet_service.update_pet(db, pet, pet_update)

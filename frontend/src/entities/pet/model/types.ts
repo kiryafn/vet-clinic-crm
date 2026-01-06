@@ -36,3 +36,5 @@ export interface PetCreate {
     breed?: string | null;
     birth_date?: string | null;
 }
+
+export interface PetUpdate extends Partial(PetCreate) { }

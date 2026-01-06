@@ -1,5 +1,5 @@
 import { api } from '../../../shared/api/api';
-import type { Pet, PetCreate } from '../model/types';
+import type { Pet, PetCreate, PetUpdate } from '../model/types';
 
 export const petApi = {
     getAll: async (): Promise<Pet[]> => {
@@ -14,5 +14,10 @@ export const petApi = {
 
     delete: async (id: number): Promise<void> => {
         await api.delete(`/pets/${id}`);
+    },
+
+    update: async (id: number, payload: PetUpdate): Promise<Pet> => {
+        const response = await api.patch<Pet>(`/pets/${id}`, payload);
+        return response.data;
     }
 };
