@@ -6,12 +6,11 @@ from app.core.security import get_password_hash
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+
 async def create_doctor(db: AsyncSession, doctor_in: DoctorCreate) -> Doctor:
     db_user = User(
-        email=doctor_in.email,
+        email=str(doctor_in.email),
         password_hash=get_password_hash(doctor_in.password),
-        full_name=doctor_in.full_name,
-        phone_number=doctor_in.phone_number,
         role=UserRole.DOCTOR
     )
     db.add(db_user)
@@ -22,7 +21,9 @@ async def create_doctor(db: AsyncSession, doctor_in: DoctorCreate) -> Doctor:
         specialization=doctor_in.specialization,
         experience_years=doctor_in.experience_years,
         price=doctor_in.price,
-        bio=doctor_in.bio
+        bio=doctor_in.bio,
+        full_name=doctor_in.full_name,
+        phone_number=doctor_in.phone_number
     )
     db.add(db_doctor)
     await db.commit()

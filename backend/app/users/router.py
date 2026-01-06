@@ -13,9 +13,6 @@ from app.users.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-# --- УДАЛЕН МЕТОД REGISTER ---
-# Он переехал в clients/router.py
-
 @router.post("/login", response_model=schemas.Token)
 async def login(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
