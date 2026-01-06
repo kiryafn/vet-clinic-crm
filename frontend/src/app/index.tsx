@@ -10,7 +10,7 @@ import { MyPetsPage } from '../pages/MyPetsPage/MyPetsPage';
 import { AuthProvider } from '../entities/session/model/store';
 import { ProtectedRoute } from './ProtectedRoute';
 import { UserRole } from '../entities/user/model/types';
-
+import { AppointmentsPage } from '../pages/AppointmentsPage/AppointmentsPage';
 import { AdminDashboardPage } from '../pages/AdminDashboardPage/AdminDashboardPage';
 import { ManageClientsPage } from '../pages/ManageClientsPage/ManageClientsPage';
 
@@ -53,10 +53,6 @@ export const AppRouter = () => {
                     <Route
                         path="/appointments"
                         element={
-
-                    <Route
-                        path="/appointments"
-                        element={
                             <ProtectedRoute allowedRoles={[UserRole.CLIENT, UserRole.DOCTOR, UserRole.ADMIN]}>
                                 <AppointmentsPage />
                             </ProtectedRoute>
@@ -84,15 +80,6 @@ export const AppRouter = () => {
                         element={
                             <ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
                                 <MyPetsPage />
-                            </ProtectedRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/admin/doctors"
-                        element={
-                            <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-                                <ManageDoctorsPage />
                             </ProtectedRoute>
                         }
                     />
