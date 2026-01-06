@@ -60,7 +60,7 @@ export const PetRow = ({ pet, onDelete, onUpdate }: PetRowProps) => {
                 )}
             </td>
             <td className="px-8 py-5 text-right">
-                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="flex items-center justify-end gap-2">
                     <button
                         onClick={onUpdate}
                         className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"

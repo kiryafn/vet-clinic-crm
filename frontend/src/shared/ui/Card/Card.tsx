@@ -11,7 +11,7 @@ export const Card = ({ children, className, title }: CardProps) => {
     return (
         <div
             className={clsx(
-                'bg-white rounded-lg shadow p-6 border border-gray-200',
+                'bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 border border-gray-100',
                 className
             )}
         >
@@ -21,6 +21,6 @@ export const Card = ({ children, className, title }: CardProps) => {
                 </h3>
             )}
             <div>{children}</div>
-        </div>
+        </div >
     );
 };

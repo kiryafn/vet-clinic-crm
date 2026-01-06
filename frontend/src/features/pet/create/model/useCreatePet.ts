@@ -60,6 +60,9 @@ export const useCreatePet = () => {
                 setError(detail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', '));
             } else if (typeof detail === 'string') {
                 setError(detail);
+            } else if (err.message && !err.response) {
+                // Client-side error (e.g. invalid date validation)
+                setError(err.message);
             } else {
                 setError('Failed to add pet');
             }
