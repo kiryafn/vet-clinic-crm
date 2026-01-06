@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { AppointmentStatus, type Appointment } from '../../model/types';
-import { Button } from '../../../../shared/ui';
+import { AppointmentStatus, type Appointment } from '../model/types';
+import { Button } from '../../../shared/ui';
 
 interface AppointmentListProps {
     appointments: Appointment[];

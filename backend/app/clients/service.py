@@ -27,3 +27,9 @@ async def create_client(db: AsyncSession, client_in: ClientCreate) -> Client:
     await db.refresh(db_client)
 
     return db_client
+
+
+async def get_client_by_user_id(db: AsyncSession, user_id: int) -> Client | None:
+    from sqlalchemy import select
+    result = await db.execute(select(Client).filter(Client.user_id == user_id))
+    return result.scalars().first()
