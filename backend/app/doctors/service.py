@@ -41,3 +41,17 @@ async def get_doctor_by_user_id(db: AsyncSession, user_id: int) -> Doctor | None
     query = select(Doctor).filter(Doctor.user_id == user_id)
     result = await db.execute(query)
     return result.scalars().first()
+
+
+async def delete_doctor(db: AsyncSession, doctor_id: int) -> bool:
+    from sqlalchemy import select
+    query = select(Doctor).filter(Doctor.id == doctor_id)
+    result = await db.execute(query)
+    doctor = result.scalars().first()
+    if doctor:
+        await db.delete(doctor)
+        # Also delete/disable user?
+        # For simplicity, keeping user but deleting doctor profile.
+        await db.commit()
+        return True
+    return False

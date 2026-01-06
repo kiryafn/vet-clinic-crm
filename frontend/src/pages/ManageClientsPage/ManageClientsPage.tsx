@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next'; // Assuming translation might be needed later
 import { Header } from '../../widgets/Header/Header';
 import { api } from '../../shared/api/api';
 import { Card, Button, Alert } from '../../shared/ui';
@@ -48,41 +49,64 @@ export const ManageClientsPage = () => {
 
                 {error && <Alert variant="error" title="Error">{error}</Alert>}
 
-                {isLoading ? (
-                    <div className="flex justify-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                    </div>
-                ) : (
-                    <div className="grid gap-4">
-                        {clients.map(client => (
-                            <Card key={client.id} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="font-bold text-lg text-gray-900">{client.full_name}</h3>
-                                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">ID: {client.id}</span>
-                                    </div>
-                                    <div className="text-gray-500 text-sm mt-1">
-                                        📞 {client.phone_number} | 📍 {client.address || 'No address'}
-                                    </div>
-                                </div>
-                                <div className="flex gap-2 w-full md:w-auto">
-                                    <Button
-                                        variant="ghost"
-                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                        onClick={() => handleDelete(client.id)}
-                                    >
-                                        Delete
-                                    </Button>
-                                </div>
-                            </Card>
-                        ))}
-                        {clients.length === 0 && (
-                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
-                                <h3 className="text-xl font-semibold text-gray-900">No clients found</h3>
-                            </div>
-                        )}
-                    </div>
-                )}
+                <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+                    {isLoading ? (
+                        <div className="flex justify-center py-20">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50/50 border-b border-gray-100">
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Full Name</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Address</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {clients.map((client) => (
+                                        <tr key={client.id} className="group hover:bg-gray-50/50 transition-all">
+                                            <td className="px-6 py-4 text-sm text-gray-500">#{client.id}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-gray-900">{client.full_name}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">{client.phone_number}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">{client.address || '-'}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="text-xs px-3 py-1 bg-white border border-gray-200 hover:bg-gray-50"
+                                                        onClick={() => alert('Edit coming soon!')}
+                                                    >
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs px-3 py-1"
+                                                        onClick={() => handleDelete(client.id)}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {clients.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                                No clients found.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -46,6 +46,7 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
                     <thead>
                         <tr className="bg-gray-50/50 border-b border-gray-100">
                             <th className="px-8 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date & Time</th>
+                            <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Client</th>
                             <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Pet</th>
                             <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Doctor</th>
                             <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
@@ -62,6 +63,10 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
                                     <div className="text-xs text-gray-500">
                                         {format(new Date(apt.date_time), 'HH:mm')}
                                     </div>
+                                </td>
+                                <td className="px-6 py-5">
+                                    <div className="font-medium text-gray-900">{apt.client?.full_name || 'Unknown'}</div>
+                                    <div className="text-xs text-gray-500">{apt.client?.phone_number || '-'}</div>
                                 </td>
                                 <td className="px-6 py-5">
                                     <div className="font-medium text-gray-900">{apt.pet.name}</div>

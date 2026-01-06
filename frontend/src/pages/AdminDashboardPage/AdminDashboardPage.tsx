@@ -23,11 +23,11 @@ export const AdminDashboardPage = () => {
             color: 'bg-green-50 text-green-700'
         },
         {
-            title: 'Reports & Analytics',
-            description: 'View clinic performance, appointment stats, and revenue.',
-            action: 'View Reports',
-            path: '/admin/reports', // Placeholder
-            icon: '📊',
+            title: 'All Appointments',
+            description: 'View and manage all scheduled appointments across the clinic.',
+            action: 'View Schedule',
+            path: '/appointments',
+            icon: '📅',
             color: 'bg-purple-50 text-purple-700'
         }
     ];

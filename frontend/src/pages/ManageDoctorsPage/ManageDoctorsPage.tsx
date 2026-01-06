@@ -50,8 +50,35 @@ export const ManageDoctorsPage = () => {
                                         </div>
                                         {doc.bio && <p className="text-xs text-gray-400 mt-2 line-clamp-2">{doc.bio}</p>}
                                     </div>
-                                    <div className="text-xs font-mono bg-gray-100 px-2 py-1 rounded text-gray-500">
-                                        ID: {doc.id}
+                                    <div className="flex flex-col items-end gap-2">
+                                        <div className="text-xs font-mono bg-gray-100 px-2 py-1 rounded text-gray-500">
+                                            ID: {doc.id}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs px-3 py-1"
+                                                onClick={async () => {
+                                                    if (window.confirm('Delete doctor?')) {
+                                                        try {
+                                                            await api.delete(`/doctors/${doc.id}`);
+                                                            fetchDoctors();
+                                                        } catch (e) {
+                                                            alert('Failed to delete');
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                Delete
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                className="text-xs px-3 py-1"
+                                                onClick={() => alert('Edit feature coming soon!')}
+                                            >
+                                                Edit
+                                            </Button>
+                                        </div>
                                     </div>
                                 </Card>
                             ))}
