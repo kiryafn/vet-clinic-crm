@@ -63,7 +63,10 @@
       "address": "Address (Optional)",
       "submit": "Create Account",
       "has_account": "Already have an account?",
-      "login_link": "Sign in"
+      "login_link": "Sign in",
+      "errors": {
+        "invalid_email": "Please enter a valid email address"
+      }
     }
   }
 }
