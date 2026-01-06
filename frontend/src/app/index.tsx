@@ -11,6 +11,8 @@ import { AuthProvider } from '../entities/session/model/store';
 import { ProtectedRoute } from './ProtectedRoute';
 import { UserRole } from '../entities/user/model/types';
 
+import { AppointmentsPage } from '../pages/AppointmentsPage/AppointmentsPage';
+
 export const AppRouter = () => {
     return (
         <BrowserRouter>
@@ -19,6 +21,15 @@ export const AppRouter = () => {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+
+                    <Route
+                        path="/appointments"
+                        element={
+                            <ProtectedRoute allowedRoles={[UserRole.CLIENT, UserRole.DOCTOR, UserRole.ADMIN]}>
+                                <AppointmentsPage />
+                            </ProtectedRoute>
+                        }
+                    />
 
                     <Route
                         path="/add-pet"

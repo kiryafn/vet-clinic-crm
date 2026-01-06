@@ -35,3 +35,9 @@ async def get_doctors(db: AsyncSession, skip: int = 0, limit: int = 5) -> list[D
     query = select(Doctor).offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
+
+
+async def get_doctor_by_user_id(db: AsyncSession, user_id: int) -> Doctor | None:
+    query = select(Doctor).filter(Doctor.user_id == user_id)
+    result = await db.execute(query)
+    return result.scalars().first()

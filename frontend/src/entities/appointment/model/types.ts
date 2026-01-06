@@ -1,39 +1,39 @@
-import type {PetSpecies} from "../../pet";
-
-export const AppointmentStatus = {
-    PLANNED: 'Planned',
-    COMPLETED: 'Completed',
-    CANCELLED: 'Cancelled',
-} as const;
-
-export type AppointmentStatus = (typeof AppointmentStatus)[keyof typeof AppointmentStatus];
+export enum AppointmentStatus {
+    PLANNED = 'planned',
+    COMPLETED = 'completed',
+    CANCELLED = 'cancelled'
+}
 
 export interface Appointment {
     id: number;
-    user_id: number;
-    doctor_id: number;
-    pet_id: number;
     date_time: string;
     duration_minutes: number;
     status: AppointmentStatus;
-    reason?: string;
+    reason: string;
     doctor_notes?: string;
+    user_description?: string;
 
-    pet?: {
-        name: string;
-        species: PetSpecies;
-
-    };
-    doctor?: {
+    doctor: {
+        id: number;
         full_name: string;
-        specialization: string;
+        specialization?: string | { name: string }; // Handle potential backend variations
+        price: number;
+    };
+    pet: {
+        id: number;
+        name: string;
+        species: string;
+    };
+    client?: { // Might be missing if viewed by client? No, always loaded.
+        id: number;
+        full_name: string;
+        phone_number?: string;
     };
 }
 
-export interface CreateAppointmentDto {
-    user_id: number;
+export interface AppointmentCreate {
     doctor_id: number;
     pet_id: number;
-    date_time: string;
-    reason: string;
+    date_time: string; // ISO
+    user_description?: string;
 }

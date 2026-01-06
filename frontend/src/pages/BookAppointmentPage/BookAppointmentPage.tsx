@@ -1,16 +1,17 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { format } from 'date-fns';
 import { Header } from '../../widgets/Header/Header';
 import { Button, Input, Card, Alert } from '../../shared/ui';
 import { api } from '../../shared/api/api';
-import { format, addMinutes, isBefore, parseISO, set, startOfDay, isSameDay } from 'date-fns';
+import { appointmentApi } from '../../entities/appointment/api/appointmentApi';
 
 interface Doctor {
     id: number;
     full_name: string;
-    specialization: { name: string };
+    specialization: { name: string } | string;
     price: number;
-    user: { full_name: string };
 }
 
 interface Pet {
@@ -19,29 +20,29 @@ interface Pet {
     species: string;
 }
 
-interface Appointment {
-    date_time: string;
-    // ... other fields not needed for availability check
-}
-
 export const BookAppointmentPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
+
+    // Data state
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [pets, setPets] = useState<Pet[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
     const [isFetchingData, setIsFetchingData] = useState(true);
-    const [error, setError] = useState('');
 
     // Form state
     const [doctorId, setDoctorId] = useState('');
     const [petId, setPetId] = useState('');
-    const [appointmentDate, setAppointmentDate] = useState(''); // YYYY-MM-DD
-    const [selectedSlot, setSelectedSlot] = useState<string | null>(null); // ISO string
+    const [date, setDate] = useState('');
+    const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
     const [description, setDescription] = useState('');
 
-    // Slot state
-    const [slots, setSlots] = useState<{ time: string; available: boolean }[]>([]);
+    // Slots state
+    const [slots, setSlots] = useState<string[]>([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
+
+    // UI state
+    const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -54,7 +55,7 @@ export const BookAppointmentPage = () => {
                 setPets(petsRes.data);
             } catch (err) {
                 console.error('Failed to load data', err);
-                setError('Failed to load doctors or pets');
+                setError('Failed to load doctors or pets. Please try again.');
             } finally {
                 setIsFetchingData(false);
             }
@@ -62,146 +63,99 @@ export const BookAppointmentPage = () => {
         fetchData();
     }, []);
 
-    // Fetch slots when doctor and date are selected
     useEffect(() => {
-        if (!doctorId || !appointmentDate) {
+        if (!doctorId || !date) {
             setSlots([]);
             return;
         }
 
-        const fetchAppointments = async () => {
+        const fetchSlots = async () => {
             setLoadingSlots(true);
             try {
-                const res = await api.get<Appointment[]>(`/appointments/public/doctor/${doctorId}`);
-                const existingAppointments = res.data;
-                generateSlots(existingAppointments);
+                // Backend expects date string (ISO or YYYY-MM-DD)
+                // appointmentApi.getSlots returns ISO strings of available start times
+                const availableSlots = await appointmentApi.getSlots(Number(doctorId), date);
+                setSlots(availableSlots);
             } catch (err) {
                 console.error(err);
-                setError('Failed to fetch availability');
+                setError('Failed to load available slots');
             } finally {
                 setLoadingSlots(false);
             }
         };
 
-        fetchAppointments();
-    }, [doctorId, appointmentDate]);
-
-    const generateSlots = (appointments: Appointment[]) => {
-        const startHour = 9;
-        const endHour = 18;
-        const interval = 45; // minutes
-
-        const date = parseISO(appointmentDate);
-        const dayStart = startOfDay(date);
-
-        // Define working hours for the selected day
-        let currentTime = set(dayStart, { hours: startHour, minutes: 0 });
-        const endTime = set(dayStart, { hours: endHour, minutes: 0 });
-
-        const newSlots: { time: string; available: boolean }[] = [];
-
-        while (isBefore(currentTime, endTime)) {
-            const slotStart = currentTime;
-            //const slotEnd = addMinutes(slotStart, interval);
-
-            // Check overlap
-            const isOccupied = appointments.some(app => {
-                const appStart = parseISO(app.date_time);
-                // Simple strict equality check for start time matches or overlap
-                // Assuming appointments are also fixed 45 mins aligned for now to keep it simple
-                // or check if appStart is within [slotStart, slotEnd) 
-                return isSameDay(appStart, date) &&
-                    (appStart.getTime() === slotStart.getTime());
-            });
-
-            newSlots.push({
-                time: format(slotStart, 'HH:mm'),
-                available: !isOccupied
-            });
-
-            currentTime = addMinutes(currentTime, interval);
-        }
-        setSlots(newSlots);
-    };
+        fetchSlots();
+    }, [doctorId, date]);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!selectedSlot || !appointmentDate || !petId) return;
+        if (!selectedSlot || !petId || !doctorId) return;
 
-        setIsLoading(true);
+        setIsSubmitting(true);
         setError('');
 
-        // Combine date and time
-        const [hours, minutes] = selectedSlot.split(':').map(Number);
-        const finalDateTime = set(parseISO(appointmentDate), { hours, minutes });
-
         try {
-            await api.post('/appointments/', {
-                doctor_id: parseInt(doctorId),
-                pet_id: parseInt(petId),
-                date_time: finalDateTime.toISOString(), // Changed from appointment_date to date_time to match schema if needed, checking backend...
-                // Backend schema for AppointmentCreate has 'date_time'. My previous code had 'appointment_date' which was likely wrong.
-                // Checking backend/app/appointments/schemas.py... 
-                // Wait, I should check the schema. Assuming 'date_time' is correct based on models.
-                user_description: description,
-                // status defaults in backend usually
+            await appointmentApi.create({
+                doctor_id: Number(doctorId),
+                pet_id: Number(petId),
+                date_time: selectedSlot, // Slot is already an ISO string from backend
+                user_description: description
             });
-            navigate('/');
+            navigate('/appointments');
         } catch (err: any) {
             const detail = err.response?.data?.detail;
             setError(typeof detail === 'string' ? detail : 'Failed to book appointment');
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex flex-col">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             <Header />
-            <div className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
-                <Card title="Book Appointment" className="w-full max-w-2xl">
+            <div className="flex-1 container mx-auto px-4 py-8 pt-24 flex justify-center">
+                <Card title={t('home.cards.book_appointment')} className="w-full max-w-2xl">
                     {error && (
                         <div className="mb-6">
-                            <Alert variant="error" title="Booking Error">
+                            <Alert variant="error" title="Error">
                                 {error}
                             </Alert>
                         </div>
                     )}
 
                     {isFetchingData ? (
-                        <div className="text-center py-8">Loading data...</div>
+                        <div className="flex justify-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                        </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-
+                            {/* Doctor & Pet Selection */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Step 1: Doctor */}
-                                <div className="input-wrapper">
-                                    <label className="input-label">Select Doctor</label>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Doctor</label>
                                     <select
                                         value={doctorId}
                                         onChange={e => {
                                             setDoctorId(e.target.value);
                                             setSelectedSlot(null);
                                         }}
-                                        className="input"
+                                        className="w-full rounded-xl border-gray-200 bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
                                         required
                                     >
                                         <option value="">-- Choose a Doctor --</option>
                                         {doctors.map(doctor => (
                                             <option key={doctor.id} value={doctor.id}>
-                                                {doctor.user?.full_name || doctor.full_name} - {doctor.specialization?.name} (${doctor.price})
+                                                {doctor.full_name} ({typeof doctor.specialization === 'object' ? doctor.specialization.name : doctor.specialization}) - ${doctor.price}
                                             </option>
                                         ))}
                                     </select>
                                 </div>
-
-                                {/* Step 1.5: Pet */}
-                                <div className="input-wrapper">
-                                    <label className="input-label">Select Pet</label>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Pet</label>
                                     <select
                                         value={petId}
                                         onChange={e => setPetId(e.target.value)}
-                                        className="input"
+                                        className="w-full rounded-xl border-gray-200 bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
                                         required
                                     >
                                         <option value="">-- Choose a Pet --</option>
@@ -214,72 +168,85 @@ export const BookAppointmentPage = () => {
                                 </div>
                             </div>
 
-                            {/* Step 2: Date */}
+                            {/* Date Selection */}
                             <Input
                                 label="Date"
                                 type="date"
-                                value={appointmentDate}
+                                value={date}
                                 onChange={e => {
-                                    setAppointmentDate(e.target.value);
+                                    setDate(e.target.value);
                                     setSelectedSlot(null);
                                 }}
                                 required
                                 min={new Date().toISOString().split('T')[0]}
                             />
 
-                            {/* Step 3: Slots */}
-                            {doctorId && appointmentDate && (
-                                <div>
-                                    <label className="input-label mb-2 block">Available Time Slots (45 min)</label>
+                            {/* Slot Selection */}
+                            {doctorId && date && (
+                                <div className="animate-fade-in">
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">Available Time Slots</label>
+
                                     {loadingSlots ? (
-                                        <div className="text-sm text-gray-500">Calculating availability...</div>
+                                        <div className="text-gray-500 text-sm">Loading slots...</div>
+                                    ) : slots.length > 0 ? (
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                                            {slots.map(slotIso => {
+                                                const timeStr = format(new Date(slotIso), 'HH:mm');
+                                                const isSelected = selectedSlot === slotIso;
+                                                return (
+                                                    <button
+                                                        key={slotIso}
+                                                        type="button"
+                                                        onClick={() => setSelectedSlot(slotIso)}
+                                                        className={`
+                                                            py-2 px-3 rounded-lg text-sm font-medium transition-all text-center
+                                                            ${isSelected
+                                                                ? 'bg-indigo-600 text-white shadow-md transform scale-105'
+                                                                : 'bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-600 hover:shadow-sm'
+                                                            }
+                                                        `}
+                                                    >
+                                                        {timeStr}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     ) : (
-                                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                                            {slots.map(slot => (
-                                                <button
-                                                    key={slot.time}
-                                                    type="button"
-                                                    disabled={!slot.available}
-                                                    onClick={() => setSelectedSlot(slot.time)}
-                                                    className={`
-                                                        py-2 px-1 rounded text-sm font-medium transition-colors border
-                                                        ${slot.available
-                                                            ? selectedSlot === slot.time
-                                                                ? 'bg-indigo-600 text-white border-indigo-600'
-                                                                : 'bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:text-indigo-600'
-                                                            : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-60'
-                                                        }
-                                                    `}
-                                                >
-                                                    {slot.time}
-                                                </button>
-                                            ))}
-                                            {slots.length === 0 && <div className="col-span-full text-gray-500 text-sm">No slots available.</div>}
+                                        <div className="text-gray-500 text-sm italic bg-gray-50 p-4 rounded-lg text-center">
+                                            No available slots for this date. Please try another day.
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            {/* Step 4: Description */}
-                            <div className="input-wrapper">
-                                <label className="input-label">Reason / Description</label>
+                            {/* Description */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Visit</label>
                                 <textarea
                                     value={description}
                                     onChange={e => setDescription(e.target.value)}
-                                    className="input min-h-[100px]"
+                                    className="w-full rounded-xl border-gray-200 bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all min-h-[100px]"
                                     placeholder="Briefly describe the issue..."
                                     required
                                 />
                             </div>
 
-                            {error && <div className="text-red-500 text-sm">{error}</div>}
-
-                            <div className="flex gap-3 mt-4">
-                                <Button type="button" variant="outline" onClick={() => navigate('/')} className="w-full">
+                            <div className="flex gap-4 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => navigate('/')}
+                                    className="flex-1"
+                                >
                                     Cancel
                                 </Button>
-                                <Button type="submit" isLoading={isLoading} className="w-full" disabled={!selectedSlot}>
-                                    Confirm Booking
+                                <Button
+                                    type="submit"
+                                    isLoading={isSubmitting}
+                                    disabled={!selectedSlot || !petId}
+                                    className="flex-1 shadow-lg shadow-indigo-500/20"
+                                >
+                                    Confirm Appointment
                                 </Button>
                             </div>
                         </form>

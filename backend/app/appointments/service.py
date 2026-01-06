@@ -95,7 +95,7 @@ async def get_day_slots(db: AsyncSession, doctor_id: int, date: datetime) -> lis
     return available_slots
 
 
-async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate):
+async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate, client_id: int):
     appt_time = ensure_utc(appointment_in.date_time)
 
     is_available = await check_availability(db, appointment_in.doctor_id, appt_time)
@@ -105,7 +105,8 @@ async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate
     # Создаем объект, используя время в UTC
     db_appointment = Appointment(
         **appointment_in.model_dump(exclude={"date_time"}),  # Исключаем, чтобы передать явно
-        date_time=appt_time
+        date_time=appt_time,
+        client_id=client_id
     )
 
     db.add(db_appointment)
@@ -114,8 +115,21 @@ async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate
     return db_appointment
 
 
-async def get_appointments(db: AsyncSession, skip: int = 0, limit: int = 100):
-    result = await db.execute(select(Appointment).offset(skip).limit(limit))
+async def get_appointments(db: AsyncSession, skip: int = 0, limit: int = 100, filters: dict = None):
+    query = select(Appointment)
+    
+    if filters:
+        for attr, value in filters.items():
+            query = query.filter(getattr(Appointment, attr) == value)
+            
+    # Eager load relationships for display
+    query = query.options(
+        selectinload(Appointment.client),
+        selectinload(Appointment.doctor),
+        selectinload(Appointment.pet)
+    ).order_by(Appointment.date_time.asc())
+    
+    result = await db.execute(query.offset(skip).limit(limit))
     return result.scalars().all()
 
 

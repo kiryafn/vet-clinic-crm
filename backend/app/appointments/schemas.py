@@ -11,7 +11,6 @@ from app.doctors.schemas import DoctorRead
 class AppointmentCreate(BaseModel):
     doctor_id: int
     pet_id: int
-    user_id: int
     date_time: datetime
     user_description: str | None = None
 

@@ -35,6 +35,10 @@ export const Header = () => {
                                 {t('header.hello', { name: user?.full_name })}
                             </span>
 
+                            <Link to="/appointments" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">
+                                {t('home.cards.my_appointments_action', 'Appointments')}
+                            </Link>
+
                             {user?.role === UserRole.ADMIN && (
                                 <Link to="/admin" className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
                                     {t('header.admin_dashboard')}

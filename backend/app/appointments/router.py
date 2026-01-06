@@ -5,8 +5,9 @@ from datetime import datetime
 
 from app.core.db import get_db
 from app.users.dependencies import get_current_user
-from app.users.models import User
+from app.users.models import User, UserRole
 from app.appointments import schemas, service
+from app.clients.service import get_client_by_user_id
 
 router = APIRouter()
 
@@ -16,7 +17,16 @@ async def create_appointment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await service.create_appointment(db, appointment_in)
+    if current_user.role != UserRole.CLIENT:
+        # Assuming only clients book for themselves for now, or admins?
+        # If admin books, logic might differ. For now strict to Client booking.
+        raise HTTPException(status_code=403, detail="Only clients can book appointments")
+
+    client = await get_client_by_user_id(db, current_user.id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client profile not found")
+
+    return await service.create_appointment(db, appointment_in, client_id=client.id)
 
 @router.get("/", response_model=List[schemas.AppointmentRead])
 async def read_appointments(
@@ -25,7 +35,23 @@ async def read_appointments(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await service.get_appointments(db, skip=skip, limit=limit)
+    # Role-based filtering
+    filter_by = {}
+    if current_user.role == UserRole.CLIENT:
+        client = await get_client_by_user_id(db, current_user.id)
+        if client:
+            filter_by['client_id'] = client.id
+        else:
+            return [] # No profile, no appointments
+    elif current_user.role == UserRole.DOCTOR:
+        from app.doctors.service import get_doctor_by_user_id
+        doctor = await get_doctor_by_user_id(db, current_user.id)
+        if doctor:
+            filter_by['doctor_id'] = doctor.id
+        else:
+            return []
+    
+    return await service.get_appointments(db, skip=skip, limit=limit, filters=filter_by)
 
 @router.get("/slots", response_model=List[datetime])
 async def get_available_slots(
