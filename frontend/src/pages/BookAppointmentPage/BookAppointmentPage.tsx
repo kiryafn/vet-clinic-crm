@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../../widgets/Header/Header';
-import { Button, Input, Card } from '../../shared/ui';
+import { Button, Input, Card, Alert } from '../../shared/ui';
 import { api } from '../../shared/api/api';
 import { format, addMinutes, isBefore, parseISO, set, startOfDay, isSameDay } from 'date-fns';
 
@@ -160,6 +160,14 @@ export const BookAppointmentPage = () => {
             <Header />
             <div className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
                 <Card title="Book Appointment" className="w-full max-w-2xl">
+                    {error && (
+                        <div className="mb-6">
+                            <Alert variant="error" title="Booking Error">
+                                {error}
+                            </Alert>
+                        </div>
+                    )}
+
                     {isFetchingData ? (
                         <div className="text-center py-8">Loading data...</div>
                     ) : (
