@@ -20,9 +20,9 @@ async def create_doctor(
     if user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    spec = await db.get(models.Specialization, doctor_in.specialization_id)
-    if not spec:
-        raise HTTPException(status_code=404, detail="Specialization not found")
+    # Removed Specialization table lookup since we use Enum now
+    
+    try:
 
     try:
         db_doctor = await service.create_doctor(db, doctor_in)

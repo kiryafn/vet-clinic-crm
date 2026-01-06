@@ -35,18 +35,31 @@ export const ManageDoctorsPage = () => {
                         <h2 className="text-2xl font-bold mb-4 text-gray-700">Doctor List</h2>
                         <div className="grid gap-4">
                             {doctors.map(doc => (
-                                <Card key={doc.id} className="flex justify-between items-center">
+                                <Card key={doc.id} className="flex justify-between items-center hover:shadow-md transition-shadow">
                                     <div>
-                                        <h3 className="font-bold text-lg">{doc.user.full_name}</h3>
-                                        <p className="text-gray-600">{doc.specialization.name_en}</p>
-                                        <p className="text-sm text-gray-500">{doc.experience_years} years exp • ${doc.price}</p>
+                                        <h3 className="font-bold text-lg text-gray-900">{doc.full_name}</h3>
+                                        {/* Display formatting for capitalization */}
+                                        <p className="text-indigo-600 font-medium">
+                                            {typeof doc.specialization === 'string'
+                                                ? doc.specialization.charAt(0) + doc.specialization.slice(1).toLowerCase()
+                                                : doc.specialization?.name || JSON.stringify(doc.specialization)}
+                                        </p>
+                                        <div className="flex gap-4 text-sm text-gray-500 mt-1">
+                                            <span>⭐ {doc.experience_years} years exp</span>
+                                            <span>💰 ${doc.price}</span>
+                                        </div>
+                                        {doc.bio && <p className="text-xs text-gray-400 mt-2 line-clamp-2">{doc.bio}</p>}
                                     </div>
-                                    <div className="text-green-600 font-medium">
+                                    <div className="text-xs font-mono bg-gray-100 px-2 py-1 rounded text-gray-500">
                                         ID: {doc.id}
                                     </div>
                                 </Card>
                             ))}
-                            {doctors.length === 0 && <p className="text-gray-500">No doctors found.</p>}
+                            {doctors.length === 0 && (
+                                <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-gray-300 text-gray-500">
+                                    No doctors found.
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
