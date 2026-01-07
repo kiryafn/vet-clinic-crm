@@ -123,10 +123,12 @@ async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate
         raise HTTPException(status_code=409, detail="This time slot is already booked")
 
     # Создаем объект
+    data = appointment_in.model_dump(exclude={"date_time", "user_description"})
     db_appointment = Appointment(
-        **appointment_in.model_dump(exclude={"date_time"}),  # Исключаем, чтобы передать явно
+        **data,
         date_time=appt_time,
-        client_id=client_id
+        client_id=client_id,
+        reason=appointment_in.user_description or "No description provided" # Ensure it's not null if field is optional in schema but required in DB
     )
 
     db.add(db_appointment)
