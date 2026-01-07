@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../entities/session/model/store';
-import { UserRole } from '../../entities/user/model/types';
 import { Button } from '../../shared/ui';
 
 export const Header = () => {
@@ -34,16 +33,6 @@ export const Header = () => {
                             <span className="text-gray-700 font-medium">
                                 {t('header.hello', { name: user?.full_name })}
                             </span>
-
-                            <Link to="/add-pet" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">
-                                Add Pet
-                            </Link>
-
-                            {user?.role === UserRole.ADMIN && (
-                                <Link to="/admin" className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
-                                    {t('header.admin_dashboard')}
-                                </Link>
-                            )}
 
                             <Button variant="outline" onClick={logout} className="!py-2 !px-4 text-sm">
                                 {t('header.logout')}
