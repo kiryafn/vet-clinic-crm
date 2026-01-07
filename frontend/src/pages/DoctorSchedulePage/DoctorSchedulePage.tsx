@@ -1,78 +1,178 @@
-import { useEffect, useState } from 'react';
-import { api } from '../../shared/api/api';
-import { Card } from '../../shared/ui';
+import { useState, useEffect, useCallback } from 'react';
+import { Views, type View } from 'react-big-calendar';
+import { startOfMonth, endOfMonth } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { appointmentApi } from '../../entities/appointment/api/appointmentApi';
 import { Header } from '../../widgets/Header/Header';
-import { format, isSameDay, parseISO } from 'date-fns';
-
-interface Appointment {
-    id: number;
-    date_time: string;
-    pet: { name: string; species: string };
-    user: { full_name: string };
-    user_description: string;
-}
+import { AppointmentCalendar } from '../../entities/appointment/ui/AppointmentCalendar';
+import { AppointmentList } from '../../entities/appointment/ui/AppointmentList';
+import type { Appointment } from '../../entities/appointment/model/types';
 
 export const DoctorSchedulePage = () => {
+    const { t } = useTranslation();
+
+    // --- STATE ---
+    const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+    const [calendarView, setCalendarView] = useState<View>(Views.MONTH);
+    const [date, setDate] = useState(new Date());
+
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    // Pagination State for List View
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const limit = 10;
+
+    // Date Range State for Calendar View
+    const [dateRange, setDateRange] = useState<{ start: Date; end: Date }>({
+        start: startOfMonth(new Date()),
+        end: endOfMonth(new Date())
+    });
+
+    // --- FETCH DATA ---
+    const fetchAppointments = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            let params = {};
+
+            if (viewMode === 'calendar') {
+                // В режиме календаря грузим диапазон
+                params = {
+                    start_date: dateRange.start.toISOString(),
+                    end_date: dateRange.end.toISOString()
+                };
+            } else {
+                // В режиме списка грузим пагинацию
+                params = {
+                    page: page,
+                    limit: limit
+                };
+            }
+
+            const data = await appointmentApi.getAll(params);
+            setAppointments(data.items);
+            setTotal(data.total);
+        } catch (error) {
+            console.error('Failed to fetch appointments', error);
+            setError(t('appointments.errors.load_failed'));
+        } finally {
+            setIsLoading(false);
+        }
+    }, [viewMode, page, dateRange, t]);
 
     useEffect(() => {
-        const fetchSchedule = async () => {
-            try {
-                const res = await api.get('/appointments/doctor');
-                // Sort by date
-                const sorted = res.data.sort((a: any, b: any) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime());
-                setAppointments(sorted);
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchSchedule();
+        fetchAppointments();
+    }, [fetchAppointments]);
+
+    // Callback календаря при смене месяца/недели
+    const onRangeChange = useCallback((range: Date[] | { start: Date; end: Date }) => {
+        let start: Date, end: Date;
+        if (Array.isArray(range)) {
+            start = range[0];
+            end = range[range.length - 1];
+            end.setHours(23, 59, 59);
+        } else {
+            start = range.start;
+            end = range.end;
+        }
+        setDateRange({ start, end });
     }, []);
 
-    // Group by day
-    const grouped = appointments.reduce((acc, app) => {
-        const dateKey = format(parseISO(app.date_time), 'yyyy-MM-dd');
-        if (!acc[dateKey]) acc[dateKey] = [];
-        acc[dateKey].push(app);
-        return acc;
-    }, {} as Record<string, Appointment[]>);
+    const totalPages = Math.ceil(total / limit);
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
             <Header />
             <div className="container mx-auto px-4 py-8 pt-24">
-                <h1 className="text-3xl font-bold mb-8 text-gray-800">My Schedule (Roadmap)</h1>
+                {/* Header Controls */}
+                <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">{t('home.cards.my_schedule', 'My Schedule')}</h1>
+                        <p className="text-gray-500 mt-2">{t('home.cards.my_schedule_desc', 'View your daily appointments and patient list')}</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <div className="bg-white p-1 rounded-xl border flex shadow-sm">
+                            <button
+                                onClick={() => setViewMode('calendar')}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    viewMode === 'calendar' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'
+                                }`}
+                            >
+                                {t('appointments.actions.calendar_view', 'Calendar')}
+                            </button>
+                            <button
+                                onClick={() => setViewMode('list')}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    viewMode === 'list' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'
+                                }`}
+                            >
+                                {t('appointments.actions.list_view', 'List View')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                {isLoading ? (
-                    <p>Loading schedule...</p>
-                ) : (
-                    <div className="space-y-8 relative border-l-4 border-indigo-200 ml-4 pl-8">
-                        {Object.entries(grouped).map(([date, apps]) => (
-                            <div key={date} className="relative">
-                                {/* Date Marker */}
-                                <div className="absolute -left-[45px] top-0 w-6 h-6 rounded-full bg-indigo-500 border-4 border-white shadow-sm"></div>
-                                <h2 className="text-2xl font-bold mb-4 text-indigo-900">{format(parseISO(date), 'EEEE, MMMM do')}</h2>
+                {error && (
+                    <div className="mb-6">
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                            {error}
+                        </div>
+                    </div>
+                )}
 
-                                <div className="grid gap-4">
-                                    {apps.map(app => (
-                                        <Card key={app.id} className="flex gap-4 border-l-4 border-l-indigo-400">
-                                            <div className="text-indigo-600 font-bold min-w-[80px]">
-                                                {format(parseISO(app.date_time), 'HH:mm')}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold">{app.pet.name} ({app.pet.species})</h3>
-                                                <p className="text-gray-600 text-sm">Owner: {app.user.full_name}</p>
-                                                <p className="text-gray-500 mt-2 bg-gray-100 p-2 rounded text-sm">{app.user_description}</p>
-                                            </div>
-                                        </Card>
-                                    ))}
-                                </div>
+                {/* Loading State */}
+                {isLoading && viewMode === 'calendar' && (
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 h-[800px] flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-4"></div>
+                            <p className="text-gray-600 font-medium">{t('common.loading', 'Loading...')}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Calendar View */}
+                {viewMode === 'calendar' && !isLoading && (
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 h-[800px]">
+                        <AppointmentCalendar
+                            appointments={appointments}
+                            view={calendarView}
+                            date={date}
+                            onViewChange={setCalendarView}
+                            onDateChange={setDate}
+                            onRangeChange={onRangeChange}
+                        />
+                    </div>
+                )}
+
+                {/* List View */}
+                {viewMode === 'list' && (
+                    <div className="space-y-6">
+                        <AppointmentList appointments={appointments} isLoading={isLoading} />
+
+                        {/* Pagination Controls */}
+                        {total > 0 && !isLoading && (
+                            <div className="flex justify-center items-center gap-4 mt-8">
+                                <button
+                                    className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={page === 1}
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                >
+                                    ← {t('common.prev', 'Prev')}
+                                </button>
+                                <span className="text-gray-600 font-medium px-4 py-2 bg-white rounded-lg border border-gray-200">
+                                    {t('common.page', 'Page')} {page} {t('common.of', 'of')} {totalPages}
+                                </span>
+                                <button
+                                    className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={page >= totalPages}
+                                    onClick={() => setPage(p => p + 1)}
+                                >
+                                    {t('common.next', 'Next')} →
+                                </button>
                             </div>
-                        ))}
-                        {appointments.length === 0 && <p>No upcoming appointments.</p>}
+                        )}
                     </div>
                 )}
             </div>

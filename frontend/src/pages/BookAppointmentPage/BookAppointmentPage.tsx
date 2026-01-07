@@ -49,10 +49,12 @@ export const BookAppointmentPage = () => {
             try {
                 const [doctorsRes, petsRes] = await Promise.all([
                     api.get('/doctors/'),
-                    api.get('/pets/')
+                    api.get('/pets/', { params: { page: 1, limit: 100 } }) // Загружаем все питомцы
                 ]);
                 setDoctors(doctorsRes.data);
-                setPets(petsRes.data);
+                // Обрабатываем пагинированный ответ
+                const petsData = petsRes.data?.items || petsRes.data || [];
+                setPets(Array.isArray(petsData) ? petsData : []);
             } catch (err) {
                 console.error('Failed to load data', err);
                 setError('Failed to load doctors or pets. Please try again.');
@@ -159,7 +161,7 @@ export const BookAppointmentPage = () => {
                                         required
                                     >
                                         <option value="">-- Choose a Pet --</option>
-                                        {pets.map(pet => (
+                                        {Array.isArray(pets) && pets.map(pet => (
                                             <option key={pet.id} value={pet.id}>
                                                 {pet.name} ({pet.species})
                                             </option>
