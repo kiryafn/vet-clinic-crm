@@ -21,8 +21,8 @@ interface Pet {
 }
 
 // Функция для извлечения читаемого сообщения об ошибке из ответа FastAPI
-const extractErrorMessage = (error: any): string => {
-    if (!error) return 'An unknown error occurred';
+const extractErrorMessage = (error: any, t: (key: string, fallback?: string) => string): string => {
+    if (!error) return t('common.unknown_error');
     
     // Если это строка, возвращаем её
     if (typeof error === 'string') return error;
@@ -41,7 +41,7 @@ const extractErrorMessage = (error: any): string => {
                     const location = Array.isArray(err.loc) ? err.loc.slice(1).join('.') : '';
                     return `${err.msg}${location ? ` (${location})` : ''}`;
                 });
-            return messages.length > 0 ? messages.join('; ') : 'Validation error occurred';
+            return messages.length > 0 ? messages.join('; ') : t('common.validation_error');
         }
         
         // Если detail - это строка
@@ -59,7 +59,7 @@ const extractErrorMessage = (error: any): string => {
     try {
         return JSON.stringify(error);
     } catch {
-        return 'An error occurred';
+        return t('common.error_occurred');
     }
 };
 
@@ -109,7 +109,7 @@ export const BookAppointmentPage = () => {
                 setPets(Array.isArray(petsData) ? petsData : []);
             } catch (err: any) {
                 console.error('Failed to load data', err);
-                const errorMessage = extractErrorMessage(err) || 'Failed to load doctors or pets. Please try again.';
+                const errorMessage = extractErrorMessage(err, t) || t('booking.errors.load_failed');
                 setError(errorMessage);
             } finally {
                 setIsFetchingData(false);
@@ -136,7 +136,7 @@ export const BookAppointmentPage = () => {
                 setSlots(availableSlots || []);
             } catch (err: any) {
                 console.error('Error fetching slots:', err);
-                const errorMessage = extractErrorMessage(err) || 'Failed to load available slots';
+                const errorMessage = extractErrorMessage(err, t) || t('booking.errors.slots_failed');
                 setError(errorMessage);
             } finally {
                 setLoadingSlots(false);
@@ -150,36 +150,36 @@ export const BookAppointmentPage = () => {
         const newErrors: typeof validationErrors = {};
 
         if (!doctorId) {
-            newErrors.doctorId = 'Please select a doctor';
+            newErrors.doctorId = t('booking.validation.select_doctor');
         }
 
         if (!petId) {
-            newErrors.petId = 'Please select a pet';
+            newErrors.petId = t('booking.validation.select_pet');
         }
 
         if (!date) {
-            newErrors.date = 'Please select a date';
+            newErrors.date = t('booking.validation.select_date');
         } else {
             const selectedDate = new Date(date);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             if (selectedDate < today) {
-                newErrors.date = 'Date cannot be in the past';
+                newErrors.date = t('booking.validation.date_past');
             }
         }
 
         if (!selectedSlot) {
-            newErrors.slot = 'Please select a time slot';
+            newErrors.slot = t('booking.validation.select_slot');
         } else {
             const slotDate = new Date(selectedSlot);
             const now = new Date();
             if (slotDate <= now) {
-                newErrors.slot = 'Selected time slot must be in the future';
+                newErrors.slot = t('booking.validation.slot_future');
             }
         }
 
         if (description && description.trim().length > 500) {
-            newErrors.description = 'Description cannot exceed 500 characters';
+            newErrors.description = t('booking.validation.description_max');
         }
 
         setValidationErrors(newErrors);
@@ -202,7 +202,7 @@ export const BookAppointmentPage = () => {
             });
             navigate('/appointments');
         } catch (err: any) {
-            const errorMessage = extractErrorMessage(err) || 'Failed to book appointment';
+            const errorMessage = extractErrorMessage(err, t) || t('booking.errors.book_failed');
             setError(errorMessage);
         } finally {
             setIsSubmitting(false);
@@ -216,7 +216,7 @@ export const BookAppointmentPage = () => {
                 <Card title={t('home.cards.book_appointment')} className="w-full max-w-2xl">
                     {error && (
                         <div className="mb-6">
-                            <Alert variant="error" title="Error">
+                            <Alert variant="error" title={t('common.error')}>
                                 {error}
                             </Alert>
                         </div>
@@ -231,7 +231,7 @@ export const BookAppointmentPage = () => {
                             {/* Doctor & Pet Selection */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Doctor</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('booking.select_doctor')}</label>
                                     <select
                                         value={doctorId}
                                         onChange={e => {
@@ -246,7 +246,7 @@ export const BookAppointmentPage = () => {
                                         }`}
                                         required
                                     >
-                                        <option value="">-- Choose a Doctor --</option>
+                                        <option value="">{t('booking.choose_doctor')}</option>
                                         {doctors.map(doctor => (
                                             <option key={doctor.id} value={doctor.id}>
                                                 {doctor.full_name} ({typeof doctor.specialization === 'object' ? doctor.specialization.name : doctor.specialization}) - ${doctor.price}
@@ -258,7 +258,7 @@ export const BookAppointmentPage = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Pet</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('booking.select_pet')}</label>
                                     <select
                                         value={petId}
                                         onChange={e => {
@@ -272,7 +272,7 @@ export const BookAppointmentPage = () => {
                                         }`}
                                         required
                                     >
-                                        <option value="">-- Choose a Pet --</option>
+                                        <option value="">{t('booking.choose_pet')}</option>
                                         {Array.isArray(pets) && pets.map(pet => (
                                             <option key={pet.id} value={pet.id}>
                                                 {pet.name} ({pet.species})
@@ -287,7 +287,7 @@ export const BookAppointmentPage = () => {
 
                             {/* Date Selection */}
                             <Input
-                                label="Date"
+                                label={t('booking.date')}
                                 type="date"
                                 value={date}
                                 onChange={e => {
@@ -305,13 +305,13 @@ export const BookAppointmentPage = () => {
                             {/* Slot Selection */}
                             {doctorId && date && (
                                 <div className="animate-fade-in">
-                                    <label className="block text-sm font-medium text-gray-700 mb-3">Available Time Slots</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">{t('booking.available_slots')}</label>
                                     {validationErrors.slot && (
                                         <span className="text-xs text-red-500 mb-2 block">{validationErrors.slot}</span>
                                     )}
 
                                     {loadingSlots ? (
-                                        <div className="text-gray-500 text-sm">Loading slots...</div>
+                                        <div className="text-gray-500 text-sm">{t('booking.loading_slots')}</div>
                                     ) : slots.length > 0 ? (
                                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                                             {slots.map(slotIso => {
@@ -342,7 +342,7 @@ export const BookAppointmentPage = () => {
                                         </div>
                                     ) : (
                                         <div className="text-gray-500 text-sm italic bg-gray-50 p-4 rounded-lg text-center">
-                                            No available slots for this date. Please try another day.
+                                            {t('booking.no_slots')}
                                         </div>
                                     )}
                                 </div>
@@ -350,7 +350,7 @@ export const BookAppointmentPage = () => {
 
                             {/* Description */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Visit</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('booking.reason')}</label>
                                 <textarea
                                     value={description}
                                     onChange={e => {
@@ -362,7 +362,7 @@ export const BookAppointmentPage = () => {
                                     className={`w-full rounded-xl border bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all min-h-[100px] ${
                                         validationErrors.description ? 'border-red-500' : 'border-gray-200'
                                     }`}
-                                    placeholder="Briefly describe the issue..."
+                                    placeholder={t('booking.reason_placeholder')}
                                     maxLength={500}
                                 />
                                 {validationErrors.description && (
@@ -380,7 +380,7 @@ export const BookAppointmentPage = () => {
                                     onClick={() => navigate('/')}
                                     className="flex-1"
                                 >
-                                    Cancel
+                                    {t('booking.cancel')}
                                 </Button>
                                 <Button
                                     type="submit"
@@ -388,7 +388,7 @@ export const BookAppointmentPage = () => {
                                     disabled={!selectedSlot || !petId}
                                     className="flex-1 shadow-lg shadow-indigo-500/20"
                                 >
-                                    Confirm Appointment
+                                    {t('booking.confirm')}
                                 </Button>
                             </div>
                         </form>

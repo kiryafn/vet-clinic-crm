@@ -55,20 +55,20 @@ const CustomEvent = ({ event, onCancel, userRole, view }: CustomEventProps) => {
             <div className="w-full">
                 <div className={`font-semibold text-sm text-gray-900 ${isCompleted ? '' : isCancelled ? 'line-through opacity-70' : ''}`}>
                     <span className="mr-1">{statusEmoji}</span>
-                    {apt.pet?.name || 'Pet'}
+                    {apt.pet?.name || t('appointments.fallbacks.pet')}
                 </div>
                 {isDoctor ? (
                     <>
                         <div className="text-xs text-gray-600 mt-1">
-                            👤 {apt.client?.full_name || 'Client'}
+                            👤 {apt.client?.full_name || t('appointments.fallbacks.client')}
                         </div>
                         <div className="text-xs text-gray-600">
-                            🐾 {apt.pet?.name || 'Pet'} ({apt.pet?.species || ''})
+                            🐾 {apt.pet?.name || t('appointments.fallbacks.pet')} ({apt.pet?.species || ''})
                         </div>
                     </>
                 ) : (
                     <div className="text-xs text-gray-600 mt-1">
-                        👨‍⚕️ {apt.doctor?.full_name}
+                        👨‍⚕️ {apt.doctor?.full_name || t('appointments.fallbacks.doctor')}
                     </div>
                 )}
                 {apt.reason && (
@@ -89,7 +89,7 @@ const CustomEvent = ({ event, onCancel, userRole, view }: CustomEventProps) => {
                 <div className="flex-1 flex items-center gap-0.5 overflow-hidden min-w-0">
                     <span className="text-[0.5625rem] flex-shrink-0">{statusEmoji}</span>
                     <span className="font-semibold text-[0.625rem] leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
-                        {apt.pet?.name || 'Pet'}
+                        {apt.pet?.name || t('appointments.fallbacks.pet')}
                     </span>
                 </div>
             </div>
@@ -104,18 +104,18 @@ const CustomEvent = ({ event, onCancel, userRole, view }: CustomEventProps) => {
             <div className="flex-1 flex flex-col gap-1 overflow-hidden">
                 <div className="font-bold text-sm leading-tight overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1">
                     <span>{statusEmoji}</span>
-                    <span>{apt.pet?.name || 'Pet'}</span>
+                    <span>{apt.pet?.name || t('appointments.fallbacks.pet')}</span>
                     {apt.pet?.species && (
                         <span className="opacity-90 text-xs font-normal">({apt.pet.species})</span>
                     )}
                 </div>
                 {isDoctor ? (
                     <div className="text-xs opacity-95 overflow-hidden text-ellipsis whitespace-nowrap">
-                        👤 {apt.client?.full_name || 'Client'}
+                        👤 {apt.client?.full_name || t('appointments.fallbacks.client')}
                     </div>
                 ) : (
                     <div className="text-xs opacity-95 overflow-hidden text-ellipsis whitespace-nowrap">
-                        👨‍⚕️ {apt.doctor?.full_name || 'Doctor'}
+                        👨‍⚕️ {apt.doctor?.full_name || t('appointments.fallbacks.doctor')}
                     </div>
                 )}
                 {apt.reason && (
@@ -161,7 +161,7 @@ export const AppointmentCalendar = ({
     onSelectSlot,
     userRole,
 }: AppointmentCalendarProps) => {
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
 
     const events: CalendarEvent[] = useMemo(() => {
         const isDoctor = userRole === UserRole.DOCTOR;
@@ -171,12 +171,12 @@ export const AppointmentCalendar = ({
             let title = '';
             if (isDoctor) {
                 // Для доктора - имя клиента и питомца коротко
-                const petName = apt.pet?.name || 'Pet';
-                const clientName = apt.client?.full_name || 'Client';
+                const petName = apt.pet?.name || t('appointments.fallbacks.pet');
+                const clientName = apt.client?.full_name || t('appointments.fallbacks.client');
                 title = `${clientName}: ${petName}`;
             } else {
                 // Для клиента - только имя питомца
-                title = apt.pet?.name || 'Pet';
+                title = apt.pet?.name || t('appointments.fallbacks.pet');
             }
             return {
                 id: apt.id,

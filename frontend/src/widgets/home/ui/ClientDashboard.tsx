@@ -34,7 +34,7 @@ export const ClientDashboard = () => {
             <DashboardActionCard
                 title={t('home.cards.my_appointments')}
                 description={t('home.cards.my_appointments_desc')}
-                actionText="View Schedule"
+                actionText={t('home.cards.my_schedule_action', 'View Table')}
                 to="/appointments"
                 colorTheme="amber"
             />

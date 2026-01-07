@@ -148,10 +148,10 @@ export const DoctorSchedulePage = () => {
                         <div className="text-center">
                             <div className="text-6xl mb-4">📅</div>
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                No appointments scheduled
+                                {t('doctor_schedule.empty_title')}
                             </h3>
                             <p className="text-gray-500">
-                                Your schedule is clear! 🎉
+                                {t('doctor_schedule.empty_desc')} 🎉
                             </p>
                         </div>
                     </div>

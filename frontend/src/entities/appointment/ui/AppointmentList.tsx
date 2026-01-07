@@ -103,7 +103,7 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
                                 {/* Клієнт */}
                                 <td className="px-6 py-5">
                                     <div className="font-medium text-gray-900">
-                                        {apt.client?.full_name || 'Unknown'}
+                                        {apt.client?.full_name || t('common.unknown')}
                                     </div>
                                     <div className="text-xs text-gray-500">
                                         {apt.client?.phone_number || '-'}

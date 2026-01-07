@@ -1,31 +1,33 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../../widgets/Header/Header';
 import { Card, Button } from '../../shared/ui';
 
 export const AdminDashboardPage = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const sections = [
         {
-            title: 'Manage Doctors',
-            description: 'Register new doctors, view staff list, and manage specializations.',
-            action: 'Manage Staff',
+            title: t('admin.manage_doctors_title'),
+            description: t('admin.manage_doctors_desc'),
+            action: t('admin.manage_doctors_action'),
             path: '/admin/doctors',
             icon: '👨‍⚕️',
             color: 'bg-blue-50 text-blue-700'
         },
         {
-            title: 'Manage Clients',
-            description: 'View registered clients, manage details, and remove accounts.',
-            action: 'View Clients',
+            title: t('admin.manage_clients_title'),
+            description: t('admin.manage_clients_desc'),
+            action: t('admin.manage_clients_action'),
             path: '/admin/clients',
             icon: '👥',
             color: 'bg-green-50 text-green-700'
         },
         {
-            title: 'All Appointments',
-            description: 'View and manage all scheduled appointments across the clinic.',
-            action: 'View Schedule',
+            title: t('admin.all_appointments_title'),
+            description: t('admin.all_appointments_desc'),
+            action: t('admin.all_appointments_action'),
             path: '/appointments',
             icon: '📅',
             color: 'bg-purple-50 text-purple-700'
@@ -37,8 +39,8 @@ export const AdminDashboardPage = () => {
             <Header />
             <div className="container mx-auto px-4 py-8 pt-24">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-                    <p className="text-gray-500 mt-2">Welcome back. Here's an overview of the clinic.</p>
+                    <h1 className="text-3xl font-bold text-gray-900">{t('admin.dashboard_title')}</h1>
+                    <p className="text-gray-500 mt-2">{t('admin.dashboard_subtitle')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

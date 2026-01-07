@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../shared/api/api';
 import { Button, Input, Card } from '../../shared/ui';
 
@@ -13,6 +14,7 @@ enum DoctorSpecialization {
 }
 
 export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -55,7 +57,7 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
             } else if (typeof detail === 'string') {
                 setError(detail);
             } else {
-                setError('Failed to create doctor');
+                setError(t('doctors.form.create_failed'));
             }
         } finally {
             setIsLoading(false);
@@ -63,14 +65,14 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
     };
 
     return (
-        <Card title="Register New Doctor">
+        <Card title={t('doctors.form.title')}>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <Input label="Full Name" value={fullName} onChange={e => setFullName(e.target.value)} required />
-                <Input label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-                <Input label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                <Input label={t('doctors.form.full_name')} value={fullName} onChange={e => setFullName(e.target.value)} required />
+                <Input label={t('doctors.form.email')} type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                <Input label={t('doctors.form.password')} type="password" value={password} onChange={e => setPassword(e.target.value)} required />
 
                 <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">Specialization</label>
+                    <label className="text-sm font-medium text-gray-700">{t('doctors.form.specialization')}</label>
                     <select
                         value={specialization}
                         onChange={e => setSpecialization(e.target.value as DoctorSpecialization)}
@@ -78,19 +80,19 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
                     >
                         {Object.values(DoctorSpecialization).map(spec => (
                             <option key={spec} value={spec}>
-                                {spec.charAt(0) + spec.slice(1).toLowerCase()}
+                                {t(`doctors.specializations.${spec}`, spec.charAt(0) + spec.slice(1).toLowerCase())}
                             </option>
                         ))}
                     </select>
                 </div>
 
                 <div className="flex gap-4">
-                    <Input label="Experience (years)" type="number" value={experience} onChange={e => setExperience(e.target.value)} required />
-                    <Input label="Price ($)" type="number" value={price} onChange={e => setPrice(e.target.value)} required />
+                    <Input label={t('doctors.form.experience')} type="number" value={experience} onChange={e => setExperience(e.target.value)} required />
+                    <Input label={t('doctors.form.price')} type="number" value={price} onChange={e => setPrice(e.target.value)} required />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">Bio</label>
+                    <label className="text-sm font-medium text-gray-700">{t('doctors.form.bio')}</label>
                     <textarea
                         className="w-full rounded-xl border-gray-200 bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all min-h-[100px]"
                         value={bio}
@@ -100,7 +102,7 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
                 {error && <div className="text-red-500 text-sm">{error}</div>}
 
-                <Button type="submit" isLoading={isLoading}>Create Doctor</Button>
+                <Button type="submit" isLoading={isLoading}>{t('doctors.form.submit')}</Button>
             </form>
         </Card>
     );
