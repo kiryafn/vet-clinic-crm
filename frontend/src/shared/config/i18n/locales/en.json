@@ -164,6 +164,7 @@
       "list_view": "List View",
       "book": "Book Appointment",
       "cancel": "Cancel",
+      "complete": "Complete",
       "delete": "Delete",
       "confirm_cancel": "Are you sure you want to cancel this appointment?",
       "confirm_delete": "Are you sure you want to delete this appointment? This action cannot be undone."
@@ -188,6 +189,7 @@
     "errors": {
       "load_failed": "Failed to load appointments",
       "cancel_failed": "Failed to cancel appointment",
+      "complete_failed": "Failed to complete appointment",
       "delete_failed": "Failed to delete appointment"
     },
     "fallbacks": {

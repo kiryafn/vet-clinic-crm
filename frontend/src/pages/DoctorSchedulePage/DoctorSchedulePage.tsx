@@ -89,6 +89,17 @@ export const DoctorSchedulePage = () => {
 
     const totalPages = Math.ceil(total / limit);
 
+    // Handle complete appointment
+    const handleCompleteAppointment = async (id: number) => {
+        try {
+            await appointmentApi.complete(id);
+            await fetchAppointments(); // Refresh the list
+        } catch (error) {
+            console.error('Failed to complete appointment', error);
+            setError(t('appointments.errors.complete_failed', 'Failed to complete appointment'));
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
             <Header />
@@ -167,6 +178,7 @@ export const DoctorSchedulePage = () => {
                             onViewChange={setCalendarView}
                             onDateChange={setDate}
                             onRangeChange={onRangeChange}
+                            onCompleteAppointment={handleCompleteAppointment}
                             userRole={user?.role || UserRole.DOCTOR}
                         />
                     </div>

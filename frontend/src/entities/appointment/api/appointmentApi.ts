@@ -44,6 +44,11 @@ export const appointmentApi = {
         return response.data;
     },
 
+    complete: async (id: number) => {
+        const response = await api.put<Appointment>(`/appointments/${id}/complete`);
+        return response.data;
+    },
+
     delete: async (id: number) => {
         await api.delete(`/appointments/${id}`);
     }

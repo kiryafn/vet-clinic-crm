@@ -19,12 +19,13 @@ interface CalendarEvent extends Event {
 interface CustomEventProps {
     event: CalendarEvent;
     onCancel?: (id: number) => void;
+    onComplete?: (id: number) => void;
     onDelete?: (id: number) => void;
     userRole?: UserRole;
     view?: View;
 }
 
-const CustomEvent = ({ event, onCancel, onDelete, userRole, view }: CustomEventProps) => {
+const CustomEvent = ({ event, onCancel, onComplete, onDelete, userRole, view }: CustomEventProps) => {
     const { t } = useTranslation();
     const apt = event.resource;
     const isCancelled = apt.status === AppointmentStatus.CANCELLED;
@@ -38,6 +39,13 @@ const CustomEvent = ({ event, onCancel, onDelete, userRole, view }: CustomEventP
         e.stopPropagation();
         if (onCancel && !isCancelled && !isCompleted) {
             onCancel(apt.id);
+        }
+    };
+
+    const handleComplete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onComplete && !isCancelled && !isCompleted) {
+            onComplete(apt.id);
         }
     };
 
@@ -144,6 +152,16 @@ const CustomEvent = ({ event, onCancel, onDelete, userRole, view }: CustomEventP
                         <X size={10} />
                     </button>
                 )}
+                {isDoctor && onComplete && !isCancelled && !isCompleted && (
+                    <button
+                        onClick={handleComplete}
+                        className="bg-green-500/80 border border-green-600/60 rounded p-1 cursor-pointer flex items-center justify-center transition-all backdrop-blur-sm text-white hover:bg-green-600/90 hover:border-green-700/80 hover:scale-110 active:scale-95 w-5 h-5 flex-shrink-0"
+                        aria-label={t('appointments.actions.complete', 'Complete')}
+                        title={t('appointments.actions.complete', 'Complete')}
+                    >
+                        ✓
+                    </button>
+                )}
                 {onCancel && !isCancelled && !isCompleted && (
                     <button
                         onClick={handleCancel}
@@ -167,6 +185,7 @@ interface AppointmentCalendarProps {
     onDateChange: (date: Date) => void;
     onRangeChange: (range: Date[] | { start: Date; end: Date }) => void;
     onCancelAppointment?: (id: number) => void;
+    onCompleteAppointment?: (id: number) => void;
     onDeleteAppointment?: (id: number) => void;
     onSelectSlot?: (slotInfo: SlotInfo) => void;
     userRole?: UserRole;
@@ -180,6 +199,7 @@ export const AppointmentCalendar = ({
     onDateChange,
     onRangeChange,
     onCancelAppointment,
+    onCompleteAppointment,
     onDeleteAppointment,
     onSelectSlot,
     userRole,
@@ -366,6 +386,7 @@ export const AppointmentCalendar = ({
                         <CustomEvent
                             event={props.event as CalendarEvent}
                             onCancel={onCancelAppointment}
+                            onComplete={onCompleteAppointment}
                             onDelete={onDeleteAppointment}
                             userRole={userRole}
                             view={view}

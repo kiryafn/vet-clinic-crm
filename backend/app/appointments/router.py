@@ -147,6 +147,26 @@ async def cancel_appointment(
     return appointment
 
 
+@router.put("/{appointment_id}/complete", response_model=schemas.AppointmentRead)
+async def complete_appointment(
+        appointment_id: int,
+        db: SessionDep,
+        current_user: User = Depends(get_current_user),
+):
+    """Mark appointment as completed (doctor only)"""
+    if current_user.role != UserRole.DOCTOR:
+        raise HTTPException(status_code=403, detail="Only doctors can complete appointments")
+    
+    appointment = await service.complete_appointment(db, appointment_id)
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Опционально: можно проверить, что встреча принадлежит текущему доктору
+    # Но пока оставим простую проверку роли
+    
+    return appointment
+
+
 @router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_appointment(
         appointment_id: int,

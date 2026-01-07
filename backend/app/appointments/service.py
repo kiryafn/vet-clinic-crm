@@ -157,6 +157,19 @@ async def cancel_appointment(db: AsyncSession, appointment_id: int):
     return appointment
 
 
+async def complete_appointment(db: AsyncSession, appointment_id: int):
+    appointment = await get_appointment(db, appointment_id)
+    if not appointment:
+        return None
+
+    appointment.complete()  # Используем метод модели
+
+    await db.commit()
+    await db.refresh(appointment)
+    # Возвращаем объект (он уже с подгруженными связями из get_appointment)
+    return appointment
+
+
 async def delete_appointment(db: AsyncSession, appointment_id: int) -> bool:
     appointment = await get_appointment(db, appointment_id)
     if not appointment:
