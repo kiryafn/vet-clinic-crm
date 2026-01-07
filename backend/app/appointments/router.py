@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from typing import List, Optional
 from datetime import datetime
 
+from pydantic import BaseModel
+
 from app.core.db import SessionDep
 from app.users.dependencies import get_current_user, get_current_admin
-from app.users.models import User, UserRole
+from app.users.models import User
 from app.appointments import schemas, service
-from app.clients.service import get_client_by_user_id
-from pydantic import BaseModel
 
 router = APIRouter(prefix="/appointments", tags=["Appointments"])
 
@@ -23,14 +23,8 @@ async def create_appointment(
         db: SessionDep,
         current_user: User = Depends(get_current_user),
 ):
-    if current_user.role != UserRole.CLIENT:
-        raise HTTPException(status_code=403, detail="Only clients can book appointments")
-
-    client = await get_client_by_user_id(db, current_user.id)
-    if not client:
-        raise HTTPException(status_code=404, detail="Client profile not found")
-
-    return await service.create_appointment(db, appointment_in, client_id=client.id)
+    """Create a new appointment. Only clients can book appointments."""
+    return await service.create_appointment_for_client(db, appointment_in, current_user)
 
 
 @router.get("/", response_model=PaginatedAppointments)
@@ -86,10 +80,8 @@ async def complete_appointment(
         db: SessionDep,
         current_user: User = Depends(get_current_user),
 ):
-    if current_user.role != UserRole.DOCTOR:
-        raise HTTPException(status_code=403, detail="Only doctors can complete appointments")
-
-    return await service.complete_appointment(db, appointment_id)
+    """Complete an appointment. Only doctors can complete appointments."""
+    return await service.complete_appointment(db, appointment_id, current_user)
 
 
 @router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -1,8 +1,7 @@
 from typing import List
-
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from datetime import date
 
+from pydantic import BaseModel, ConfigDict, Field, field_validator, computed_field
 from app.pets.models import PetSpecies
 
 
@@ -86,9 +85,34 @@ class PetRead(BaseModel):
     species: PetSpecies
     breed: str | None = None
     birth_date: date | None = None
-    age: dict | None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @computed_field
+    def age(self) -> dict | None:
+        """Calculate age from birth_date."""
+        if not self.birth_date:
+            return None
+
+        today = date.today()
+        years = today.year - self.birth_date.year
+        months = today.month - self.birth_date.month
+
+        # Adjust if birthday hasn't occurred this year
+        if (today.month, today.day) < (self.birth_date.month, self.birth_date.day):
+            years -= 1
+            months = 12 - self.birth_date.month + today.month
+        elif months < 0:
+            months += 12
+
+        # Adjust months if current day is before birth day in the current month
+        if today.day < self.birth_date.day:
+            months -= 1
+            if months < 0:
+                months += 12
+                years -= 1
+
+        return {"years": max(0, years), "months": max(0, months)}
 
 class PaginatedPets(BaseModel):
     items: List[PetRead]

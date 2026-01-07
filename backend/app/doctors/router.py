@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import SessionDep
 from app.users.dependencies import get_current_admin
 from app.users.models import User
-from app.users.service import get_user_by_email
-from app.doctors import models, schemas, service
+from app.doctors import schemas, service
 
 router = APIRouter(prefix="/doctors", tags=["Doctors"])
 
@@ -16,17 +14,8 @@ async def create_doctor(
         db: SessionDep,
         admin: User = Depends(get_current_admin)
 ):
-    user = await get_user_by_email(db, doctor_in.email)
-    if user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    try:
-        db_doctor = await service.create_doctor(db, doctor_in)
-        return db_doctor
-
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+    """Create a new doctor. Admin only."""
+    return await service.create_doctor(db, doctor_in)
 
 
 @router.get("/", response_model=list[schemas.DoctorRead])
@@ -57,10 +46,8 @@ async def update_doctor(
     db: SessionDep,
     admin: User = Depends(get_current_admin)
 ):
-    doctor = await service.update_doctor(db, doctor_id, doctor_update)
-    if not doctor:
-        raise HTTPException(status_code=404, detail="Doctor not found")
-    return doctor
+    """Update a doctor. Admin only."""
+    return await service.update_doctor_or_404(db, doctor_id, doctor_update)
 
 
 @router.delete("/{doctor_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -69,6 +56,5 @@ async def delete_doctor(
     db: SessionDep,
     admin: User = Depends(get_current_admin)
 ):
-    success = await service.delete_doctor(db, doctor_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Doctor not found")
+    """Delete a doctor. Admin only."""
+    await service.delete_doctor_or_404(db, doctor_id)

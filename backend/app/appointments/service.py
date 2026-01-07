@@ -50,12 +50,42 @@ async def check_availability(db: AsyncSession, doctor_id: int, new_time: datetim
     return True
 
 
-async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate, client_id: int):
+async def create_appointment_for_client(
+    db: AsyncSession,
+    appointment_in: AppointmentCreate,
+    current_user: User
+) -> Appointment:
+    """Create an appointment for the current client user."""
+    if current_user.role != UserRole.CLIENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only clients can book appointments"
+        )
+    
+    client = await get_client_by_user_id(db, current_user.id)
+    if not client:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Client profile not found"
+        )
+    
+    return await create_appointment(db, appointment_in, client_id=client.id)
+
+
+async def create_appointment(
+    db: AsyncSession, 
+    appointment_in: AppointmentCreate, 
+    client_id: int
+) -> Appointment:
+    """Create an appointment (internal use)."""
     appt_time = ensure_naive_utc(appointment_in.date_time)
 
     is_available = await check_availability(db, appointment_in.doctor_id, appt_time)
     if not is_available:
-        raise HTTPException(status_code=409, detail="This time slot is already booked")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This time slot is already booked"
+        )
 
     data = appointment_in.model_dump(exclude={"date_time", "reason"})
     reason_value = appointment_in.reason if appointment_in.reason is not None else "No description provided"
@@ -78,12 +108,19 @@ async def get_appointments_for_user(
         start_date: Optional[datetime],
         end_date: Optional[datetime]
 ) -> tuple[List[Appointment], int]:
+    """Get appointments for a user. Filters by role (CLIENT sees their appointments, DOCTOR sees their appointments)."""
+    from app.doctors.service import get_doctor_by_user_id
+    
     query = select(Appointment)
 
     if user.role == UserRole.CLIENT:
         client = await get_client_by_user_id(db, user.id)
         if client:
             query = query.filter(Appointment.client_id == client.id)
+    elif user.role == UserRole.DOCTOR:
+        doctor = await get_doctor_by_user_id(db, user.id)
+        if doctor:
+            query = query.filter(Appointment.doctor_id == doctor.id)
 
     if start_date and end_date:
         s_date = ensure_naive_utc(start_date)
@@ -110,6 +147,7 @@ async def get_appointments_for_user(
     return result.scalars().all(), total
 
 async def get_appointment_or_404(db: AsyncSession, appointment_id: int) -> Appointment:
+    """Get an appointment by ID. Raises 404 if not found."""
     query = select(Appointment).filter(Appointment.id == appointment_id).options(
         selectinload(Appointment.client),
         selectinload(Appointment.doctor),
@@ -118,36 +156,61 @@ async def get_appointment_or_404(db: AsyncSession, appointment_id: int) -> Appoi
     result = await db.execute(query)
     appointment = result.scalars().first()
     if not appointment:
-        raise HTTPException(status_code=404, detail="Appointment not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Appointment not found"
+        )
     return appointment
 
 
-
-async def cancel_appointment(db: AsyncSession, appointment_id: int, current_user: User):
+async def cancel_appointment(
+    db: AsyncSession, 
+    appointment_id: int, 
+    current_user: User
+) -> Appointment:
+    """Cancel an appointment. Only the client who owns the appointment can cancel it."""
     appointment = await get_appointment_or_404(db, appointment_id)
-
-    if current_user.role == UserRole.CLIENT:
-        client = await get_client_by_user_id(db, current_user.id)
-
-        if not client or appointment.client_id != client.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to cancel this appointment"
-            )
+    
+    # Only clients can cancel appointments
+    if current_user.role != UserRole.CLIENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only clients can cancel appointments"
+        )
+    
+    client = await get_client_by_user_id(db, current_user.id)
+    if not client or appointment.client_id != client.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to cancel this appointment"
+        )
 
     appointment.cancel()
     await db.commit()
     await db.refresh(appointment)
     return appointment
 
-async def complete_appointment(db: AsyncSession, appointment_id: int):
+
+async def complete_appointment(
+    db: AsyncSession, 
+    appointment_id: int,
+    current_user: User
+) -> Appointment:
+    """Complete an appointment. Only doctors can complete appointments."""
+    if current_user.role != UserRole.DOCTOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only doctors can complete appointments"
+        )
+    
     appointment = await get_appointment_or_404(db, appointment_id)
     appointment.complete()
     await db.commit()
     await db.refresh(appointment)
     return appointment
 
-async def delete_appointment(db: AsyncSession, appointment_id: int):
+async def delete_appointment(db: AsyncSession, appointment_id: int) -> None:
+    """Delete an appointment (admin only)."""
     appointment = await get_appointment_or_404(db, appointment_id)
     await db.delete(appointment)
     await db.commit()

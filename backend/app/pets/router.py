@@ -11,16 +11,11 @@ async def create_pet(
         db: SessionDep,
         current_user: CurrentUser
 ):
-    if not current_user.client_profile:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only users with Client profile can add pets."
-        )
-
-    return await pet_service.create_pet(
+    """Create a new pet for the current client user."""
+    return await pet_service.create_pet_for_client(
         db=db,
         pet=pet,
-        owner_id=current_user.client_profile.id
+        current_user=current_user
     )
 
 @router.get("/", response_model=schemas.PaginatedPets)
@@ -50,17 +45,8 @@ async def delete_pet(
         db: SessionDep,
         current_user: CurrentUser
 ):
-    if not current_user.client_profile:
-         raise HTTPException(status_code=403, detail="Not authorized")
-
-    pet = await pet_service.get_pet(db, pet_id)
-    if not pet:
-        raise HTTPException(status_code=404, detail="Pet not found")
-
-    if pet.owner_id != current_user.client_profile.id:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this pet")
-
-    await pet_service.delete_pet(db, pet)
+    """Delete a pet. Only the owner can delete their pet."""
+    await pet_service.delete_pet_by_id(db, pet_id, current_user)
 
 
 @router.patch("/{pet_id}", response_model=schemas.PetRead)
@@ -70,14 +56,5 @@ async def update_pet(
         db: SessionDep,
         current_user: CurrentUser
 ):
-    if not current_user.client_profile:
-         raise HTTPException(status_code=403, detail="Not authorized")
-
-    pet = await pet_service.get_pet(db, pet_id)
-    if not pet:
-        raise HTTPException(status_code=404, detail="Pet not found")
-
-    if pet.owner_id != current_user.client_profile.id:
-        raise HTTPException(status_code=403, detail="Not authorized to update this pet")
-
-    return await pet_service.update_pet(db, pet, pet_update)
+    """Update a pet. Only the owner can update their pet."""
+    return await pet_service.update_pet_by_id(db, pet_id, pet_update, current_user)

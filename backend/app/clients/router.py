@@ -13,14 +13,8 @@ async def register_client(
     client_in: schemas.ClientCreate,
     db: SessionDep
 ):
-    existing_user = await user_service.get_user_by_email(db, email=str(client_in.email))
-    if existing_user:
-        raise HTTPException(
-            status_code=400,
-            detail="Email already registered"
-        )
-
-    return await service.create_client(db=db, client_in=client_in)
+    """Register a new client."""
+    return await service.create_client_with_validation(db=db, client_in=client_in)
 
 
 @router.get("/", response_model=List[schemas.ClientRead])
@@ -39,10 +33,8 @@ async def get_client(
     db: SessionDep,
     admin: User = Depends(get_current_admin)
 ):
-    client = await service.get_client_by_id(db, client_id)
-    if not client:
-        raise HTTPException(status_code=404, detail="Client not found")
-    return client
+    """Get a client by ID. Admin only."""
+    return await service.get_client_or_404(db, client_id)
 
 
 @router.patch("/{client_id}", response_model=schemas.ClientRead)
@@ -52,10 +44,8 @@ async def update_client(
     db: SessionDep,
     admin: User = Depends(get_current_admin)
 ):
-    client = await service.update_client(db, client_id, client_update)
-    if not client:
-        raise HTTPException(status_code=404, detail="Client not found")
-    return client
+    """Update a client. Admin only."""
+    return await service.update_client_or_404(db, client_id, client_update)
 
 
 @router.delete("/{client_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -64,6 +54,5 @@ async def delete_client(
     db: SessionDep,
     admin: User = Depends(get_current_admin)
 ):
-    success = await service.delete_client(db, client_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Client not found")
+    """Delete a client. Admin only."""
+    await service.delete_client_or_404(db, client_id)

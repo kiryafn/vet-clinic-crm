@@ -1,13 +1,31 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
 from app.users.models import User, UserRole
+from app.users.service import get_user_by_email
 from app.clients.models import Client
 from app.clients.schemas import ClientCreate, ClientUpdate
 from app.core.security import get_password_hash
 
 
+async def create_client_with_validation(
+    db: AsyncSession, 
+    client_in: ClientCreate
+) -> Client:
+    """Create a new client with email validation."""
+    existing_user = await get_user_by_email(db, str(client_in.email))
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    return await create_client(db, client_in)
+
+
 async def create_client(db: AsyncSession, client_in: ClientCreate) -> Client:
+    """Create a new client (internal use)."""
     db_user = User(
         email=str(client_in.email),
         password_hash=get_password_hash(client_in.password),
@@ -43,12 +61,29 @@ async def get_clients(db: AsyncSession, skip: int = 0, limit: int = 5) -> list[C
 
 
 async def get_client_by_id(db: AsyncSession, client_id: int) -> Client | None:
+    """Get a client by ID. Returns None if not found."""
     query = select(Client).where(Client.id == client_id)
     result = await db.execute(query)
     return result.scalars().first()
 
 
-async def update_client(db: AsyncSession, client_id: int, client_update: ClientUpdate) -> Client | None:
+async def get_client_or_404(db: AsyncSession, client_id: int) -> Client:
+    """Get a client by ID. Raises 404 if not found."""
+    client = await get_client_by_id(db, client_id)
+    if not client:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Client not found"
+        )
+    return client
+
+
+async def update_client(
+    db: AsyncSession, 
+    client_id: int, 
+    client_update: ClientUpdate
+) -> Client | None:
+    """Update a client. Returns None if not found."""
     client = await get_client_by_id(db, client_id)
     if not client:
         return None
@@ -62,7 +97,23 @@ async def update_client(db: AsyncSession, client_id: int, client_update: ClientU
     return client
 
 
+async def update_client_or_404(
+    db: AsyncSession,
+    client_id: int,
+    client_update: ClientUpdate
+) -> Client:
+    """Update a client. Raises 404 if not found."""
+    client = await update_client(db, client_id, client_update)
+    if not client:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Client not found"
+        )
+    return client
+
+
 async def delete_client(db: AsyncSession, client_id: int) -> bool:
+    """Delete a client and associated user. Returns False if not found."""
     query = select(Client).where(Client.id == client_id)
     result = await db.execute(query)
     client = result.scalars().first()
@@ -81,3 +132,13 @@ async def delete_client(db: AsyncSession, client_id: int) -> bool:
 
     await db.commit()
     return True
+
+
+async def delete_client_or_404(db: AsyncSession, client_id: int) -> None:
+    """Delete a client. Raises 404 if not found."""
+    success = await delete_client(db, client_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Client not found"
+        )

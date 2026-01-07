@@ -42,6 +42,7 @@ class Pet(Base, TimestampMixin):
 
     @property
     def age(self) -> dict | None:
+        """Calculate age from birth_date in years and months."""
         if not self.birth_date:
             return None
 
@@ -49,10 +50,18 @@ class Pet(Base, TimestampMixin):
         years = today.year - self.birth_date.year
         months = today.month - self.birth_date.month
 
+        # Adjust if birthday hasn't occurred this year
         if (today.month, today.day) < (self.birth_date.month, self.birth_date.day):
             years -= 1
-
-        if months < 0:
+            months = 12 - self.birth_date.month + today.month
+        elif months < 0:
             months += 12
 
-        return {"years": years, "months": months}
+        # Adjust months if current day is before birth day in the current month
+        if today.day < self.birth_date.day:
+            months -= 1
+            if months < 0:
+                months += 12
+                years -= 1
+
+        return {"years": max(0, years), "months": max(0, months)}
