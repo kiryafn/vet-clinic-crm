@@ -20,7 +20,6 @@ interface Doctor {
     specialization: DoctorSpecialization;
     phone_number?: string;
     experience_years?: number;
-    price?: number;
     bio?: string;
     email?: string;
 }
@@ -40,7 +39,6 @@ export const EditDoctorForm = ({ doctor, onSuccess, onCancel }: EditDoctorFormPr
     const [fullName, setFullName] = useState(doctor.full_name);
     const [specialization, setSpecialization] = useState<DoctorSpecialization>(doctor.specialization);
     const [experience, setExperience] = useState(doctor.experience_years?.toString() || '');
-    const [price, setPrice] = useState(doctor.price?.toString() || '');
     const [bio, setBio] = useState(doctor.bio || '');
     const [phoneNumber, setPhoneNumber] = useState(doctor.phone_number || '');
 
@@ -48,7 +46,6 @@ export const EditDoctorForm = ({ doctor, onSuccess, onCancel }: EditDoctorFormPr
         setFullName(doctor.full_name);
         setSpecialization(doctor.specialization);
         setExperience(doctor.experience_years?.toString() || '');
-        setPrice(doctor.price?.toString() || '');
         setBio(doctor.bio || '');
         setPhoneNumber(doctor.phone_number || '');
     }, [doctor]);
@@ -65,7 +62,6 @@ export const EditDoctorForm = ({ doctor, onSuccess, onCancel }: EditDoctorFormPr
             };
 
             if (experience) updateData.experience_years = parseInt(experience);
-            if (price) updateData.price = parseFloat(price);
             if (bio) updateData.bio = bio;
             if (phoneNumber) updateData.phone_number = phoneNumber;
 
@@ -111,20 +107,12 @@ export const EditDoctorForm = ({ doctor, onSuccess, onCancel }: EditDoctorFormPr
                     </select>
                 </div>
 
-                <div className="flex gap-4">
-                    <Input 
-                        label={t('doctors.form.experience')} 
-                        type="number" 
-                        value={experience} 
-                        onChange={e => setExperience(e.target.value)} 
-                    />
-                    <Input 
-                        label={t('doctors.form.price')} 
-                        type="number" 
-                        value={price} 
-                        onChange={e => setPrice(e.target.value)} 
-                    />
-                </div>
+                <Input 
+                    label={t('doctors.form.experience')} 
+                    type="number" 
+                    value={experience} 
+                    onChange={e => setExperience(e.target.value)} 
+                />
 
                 <Input 
                     label={t('doctors.form.phone', 'Phone Number')} 

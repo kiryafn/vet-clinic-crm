@@ -28,7 +28,6 @@ class Doctor(Base, TimestampMixin):
     experience_years: Mapped[int] = mapped_column(Integer, default=0)
     phone_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
-    price: Mapped[int] = mapped_column(Integer, default=50)
 
     specialization: Mapped[DoctorSpecialization] = mapped_column(SqlEnum(DoctorSpecialization), default=DoctorSpecialization.THERAPIST)
 

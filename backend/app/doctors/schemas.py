@@ -9,7 +9,6 @@ class DoctorCreate(BaseModel):
     specialization: DoctorSpecialization
     phone_number: str | None = None
     experience_years: int | None = None
-    price: int | None = None
     bio: str | None = None
 
 
@@ -18,7 +17,6 @@ class DoctorUpdate(BaseModel):
     specialization: DoctorSpecialization | None = None
     phone_number: str | None = None
     experience_years: int | None = None
-    price: int | None = None
     bio: str | None = None
 
 
@@ -29,7 +27,6 @@ class DoctorRead(BaseModel):
     specialization: DoctorSpecialization
     phone_number: str | None = None
     experience_years: int | None = None
-    price: int | None = None
     bio: str | None = None
 
     model_config = ConfigDict(from_attributes=True)

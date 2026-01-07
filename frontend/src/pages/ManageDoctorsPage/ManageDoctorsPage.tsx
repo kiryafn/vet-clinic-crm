@@ -12,7 +12,6 @@ interface Doctor {
     full_name: string;
     specialization: string | { name: string };
     experience_years?: number;
-    price?: number;
     bio?: string;
     phone_number?: string;
     email?: string;
@@ -57,12 +56,13 @@ export const ManageDoctorsPage = () => {
                                         {/* Display formatting for capitalization */}
                                         <p className="text-indigo-600 font-medium">
                                             {typeof doc.specialization === 'string'
-                                                ? doc.specialization.charAt(0) + doc.specialization.slice(1).toLowerCase()
-                                                : doc.specialization?.name || JSON.stringify(doc.specialization)}
+                                                ? t(`doctors.specializations.${doc.specialization}`, doc.specialization.charAt(0) + doc.specialization.slice(1).toLowerCase())
+                                                : doc.specialization?.name 
+                                                    ? t(`doctors.specializations.${doc.specialization.name}`, doc.specialization.name.charAt(0) + doc.specialization.name.slice(1).toLowerCase())
+                                                    : JSON.stringify(doc.specialization)}
                                         </p>
                                         <div className="flex gap-4 text-sm text-gray-500 mt-1">
                                             <span>⭐ {doc.experience_years} {t('doctors.years_exp')}</span>
-                                            <span>💰 ${doc.price}</span>
                                         </div>
                                         {doc.bio && <p className="text-xs text-gray-400 mt-2 line-clamp-2">{doc.bio}</p>}
                                     </div>
@@ -122,7 +122,6 @@ export const ManageDoctorsPage = () => {
                                 ? editingDoctor.specialization as any
                                 : (editingDoctor.specialization as any).name || 'THERAPIST',
                             experience_years: editingDoctor.experience_years,
-                            price: editingDoctor.price,
                             bio: editingDoctor.bio,
                             phone_number: editingDoctor.phone_number,
                             email: editingDoctor.email,

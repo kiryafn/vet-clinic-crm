@@ -20,7 +20,6 @@ async def create_doctor(db: AsyncSession, doctor_in: DoctorCreate) -> Doctor:
         user_id=db_user.id,
         specialization=doctor_in.specialization,
         experience_years=doctor_in.experience_years,
-        price=doctor_in.price,
         bio=doctor_in.bio,
         full_name=doctor_in.full_name,
         phone_number=doctor_in.phone_number

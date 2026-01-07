@@ -12,7 +12,6 @@ interface Doctor {
     id: number;
     full_name: string;
     specialization: { name: string } | string;
-    price: number;
 }
 
 interface Pet {
@@ -206,11 +205,15 @@ export const BookAppointmentPage = () => {
                                         required
                                     >
                                         <option value="">{t('booking.choose_doctor')}</option>
-                                        {doctors.map(doctor => (
-                                            <option key={doctor.id} value={doctor.id}>
-                                                {doctor.full_name} ({typeof doctor.specialization === 'object' ? doctor.specialization.name : doctor.specialization}) - ${doctor.price}
-                                            </option>
-                                        ))}
+                                        {doctors.map(doctor => {
+                                            const specKey = typeof doctor.specialization === 'object' ? doctor.specialization.name : doctor.specialization;
+                                            const specLabel = t(`doctors.specializations.${specKey}`, specKey.charAt(0) + specKey.slice(1).toLowerCase());
+                                            return (
+                                                <option key={doctor.id} value={doctor.id}>
+                                                    {doctor.full_name} ({specLabel})
+                                                </option>
+                                            );
+                                        })}
                                     </select>
                                     {validationErrors.doctorId && (
                                         <span className="text-xs text-red-500 mt-1 ml-1">{validationErrors.doctorId}</span>

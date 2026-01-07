@@ -217,7 +217,6 @@
       "bio": "Bio",
       "phone": "Phone Number",
       "experience": "Experience (years)",
-      "price": "Price ($)",
       "submit": "Create Doctor",
       "create_failed": "Failed to create doctor",
       "update_failed": "Failed to update doctor"
@@ -226,7 +225,6 @@
       "name": "Name",
       "specialization": "Specialization",
       "email": "Email",
-      "rate": "Rate",
       "actions": "Actions"
     },
     "specializations": {

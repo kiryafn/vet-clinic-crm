@@ -121,9 +121,11 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
                                 {/* Лікар */}
                                 <td className="px-6 py-5">
                                     <div className="font-medium text-gray-900">{apt.doctor.full_name}</div>
-                                    <div className="text-xs text-gray-500">
-                                        {apt.doctor.specialization}
-                                    </div>
+                                    {apt.doctor.specialization && (
+                                        <div className="text-xs text-gray-500">
+                                            {t(`doctors.specializations.${apt.doctor.specialization}`, apt.doctor.specialization.charAt(0) + apt.doctor.specialization.slice(1).toLowerCase())}
+                                        </div>
+                                    )}
                                 </td>
 
                                 {/* Статус */}

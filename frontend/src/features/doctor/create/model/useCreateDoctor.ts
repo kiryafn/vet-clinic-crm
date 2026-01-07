@@ -7,7 +7,6 @@ interface CreateDoctorParams {
     password: string;
     full_name: string;
     specialization_id: number;
-    price?: number;
     phone_number?: string;
     experience_years?: number;
 }

@@ -16,7 +16,6 @@ export interface Doctor {
     phone_number?: string;
     bio?: string;
     specialization: DoctorSpecialization;
-    price?: number;
 }
 
 export interface DoctorCreate {
@@ -26,6 +25,5 @@ export interface DoctorCreate {
     specialization: DoctorSpecialization;
     phone_number?: string;
     experience_years?: number;
-    price?: number;
     bio?: string;
 }

@@ -25,7 +25,6 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
     const [password, setPassword] = useState('');
     const [specialization, setSpecialization] = useState<DoctorSpecialization>(DoctorSpecialization.THERAPIST);
     const [experience, setExperience] = useState('');
-    const [price, setPrice] = useState('');
     const [bio, setBio] = useState('');
 
     const handleSubmit = async (e: FormEvent) => {
@@ -40,7 +39,6 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
                 full_name: fullName,
                 specialization, // Send enum value string
                 experience_years: parseInt(experience),
-                price: parseFloat(price),
                 bio
             });
             onSuccess();
@@ -49,7 +47,6 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
             setEmail('');
             setPassword('');
             setExperience('');
-            setPrice('');
             setBio('');
             setSpecialization(DoctorSpecialization.THERAPIST);
         } catch (err: any) {
@@ -81,10 +78,7 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
                     </select>
                 </div>
 
-                <div className="flex gap-4">
-                    <Input label={t('doctors.form.experience')} type="number" value={experience} onChange={e => setExperience(e.target.value)} required />
-                    <Input label={t('doctors.form.price')} type="number" value={price} onChange={e => setPrice(e.target.value)} required />
-                </div>
+                <Input label={t('doctors.form.experience')} type="number" value={experience} onChange={e => setExperience(e.target.value)} required />
 
                 <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">{t('doctors.form.bio')}</label>

@@ -18,7 +18,6 @@ export interface Appointment {
         id: number;
         full_name: string;
         specialization?: string;
-        price: number;
     };
     pet: {
         id: number;

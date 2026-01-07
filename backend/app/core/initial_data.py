@@ -49,8 +49,7 @@ async def init_db(db: AsyncSession):
             "specialization": DoctorSpecialization.THERAPIST,
             "experience_years": 10,
             "phone_number": "+380501234567",
-            "bio": "Опытный ветеринар-терапевт с 10-летним стажем. Специализируюсь на лечении собак и кошек.",
-            "price": 500
+            "bio": "Опытный ветеринар-терапевт с 10-летним стажем. Специализируюсь на лечении собак и кошек."
         },
         {
             "email": "petrova@vet.com",
@@ -59,8 +58,7 @@ async def init_db(db: AsyncSession):
             "specialization": DoctorSpecialization.SURGEON,
             "experience_years": 8,
             "phone_number": "+380501234568",
-            "bio": "Ветеринарный хирург. Выполняю операции любой сложности.",
-            "price": 800
+            "bio": "Ветеринарный хирург. Выполняю операции любой сложности."
         },
         {
             "email": "sidorov@vet.com",
@@ -69,8 +67,7 @@ async def init_db(db: AsyncSession):
             "specialization": DoctorSpecialization.DENTIST,
             "experience_years": 5,
             "phone_number": "+380501234569",
-            "bio": "Ветеринарный стоматолог. Уход за зубами ваших питомцев.",
-            "price": 600
+            "bio": "Ветеринарный стоматолог. Уход за зубами ваших питомцев."
         },
         {
             "email": "kozlov@vet.com",
@@ -79,8 +76,7 @@ async def init_db(db: AsyncSession):
             "specialization": DoctorSpecialization.CARDIOLOGIST,
             "experience_years": 12,
             "phone_number": "+380501234570",
-            "bio": "Ветеринарный кардиолог. Диагностика и лечение заболеваний сердца.",
-            "price": 700
+            "bio": "Ветеринарный кардиолог. Диагностика и лечение заболеваний сердца."
         },
         {
             "email": "volkova@vet.com",
@@ -89,8 +85,7 @@ async def init_db(db: AsyncSession):
             "specialization": DoctorSpecialization.DERMATOLOGIST,
             "experience_years": 7,
             "phone_number": "+380501234571",
-            "bio": "Ветеринарный дерматолог. Лечение кожных заболеваний у животных.",
-            "price": 550
+            "bio": "Ветеринарный дерматолог. Лечение кожных заболеваний у животных."
         }
     ]
 
@@ -112,8 +107,7 @@ async def init_db(db: AsyncSession):
             specialization=doc_data["specialization"],
             experience_years=doc_data["experience_years"],
             phone_number=doc_data["phone_number"],
-            bio=doc_data["bio"],
-            price=doc_data["price"]
+            bio=doc_data["bio"]
         )
         db.add(doctor)
         await db.flush()
