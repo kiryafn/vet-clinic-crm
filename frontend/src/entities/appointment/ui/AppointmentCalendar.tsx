@@ -55,12 +55,12 @@ const CustomEvent = ({ event, onCancel, userRole, view }: CustomEventProps) => {
             <div className="w-full">
                 <div className={`font-semibold text-sm text-gray-900 ${isCompleted ? '' : isCancelled ? 'line-through opacity-70' : ''}`}>
                     <span className="mr-1">{statusEmoji}</span>
-                    {(event as any).title || `${apt.pet?.name || 'Pet'} (${apt.pet?.species || ''})`}
+                    {apt.pet?.name || 'Pet'}
                 </div>
                 {isDoctor ? (
                     <>
                         <div className="text-xs text-gray-600 mt-1">
-                            👤 {apt.client?.full_name || 'Unknown Client'}
+                            👤 {apt.client?.full_name || 'Client'}
                         </div>
                         <div className="text-xs text-gray-600">
                             🐾 {apt.pet?.name || 'Pet'} ({apt.pet?.species || ''})
@@ -71,7 +71,7 @@ const CustomEvent = ({ event, onCancel, userRole, view }: CustomEventProps) => {
                         👨‍⚕️ {apt.doctor?.full_name}
                     </div>
                 )}
-                {apt.reason && !isMonthView && (
+                {apt.reason && (
                     <div className="text-xs text-gray-500 mt-1">
                         💬 {apt.reason}
                     </div>
@@ -80,39 +80,54 @@ const CustomEvent = ({ event, onCancel, userRole, view }: CustomEventProps) => {
         );
     }
 
+    // Для Month view показываем только самое необходимое - очень компактно
+    if (isMonthView) {
+        return (
+            <div
+                className={`h-full flex items-center px-1 py-0.5 text-white relative min-h-[1.25rem] rounded transition-all ${eventBgColor} ${isCancelled ? 'grayscale opacity-70' : ''}`}
+            >
+                <div className="flex-1 flex items-center gap-0.5 overflow-hidden min-w-0">
+                    <span className="text-[0.5625rem] flex-shrink-0">{statusEmoji}</span>
+                    <span className="font-semibold text-[0.625rem] leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
+                        {apt.pet?.name || 'Pet'}
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
+    // Для Week/Day view показываем больше информации, но аккуратно
     return (
         <div
-            className={`h-full flex flex-col p-1.5 text-white relative min-h-[2.5rem] rounded-md transition-all hover:shadow-md hover:-translate-y-0.5 ${eventBgColor} ${isCancelled ? 'grayscale' : ''}`}
+            className={`h-full flex flex-col p-1.5 text-white relative min-h-[3rem] rounded transition-all hover:shadow-lg hover:z-10 ${eventBgColor} ${isCancelled ? 'grayscale opacity-70' : ''}`}
         >
-            <div className="flex-1 flex flex-col gap-0.5 overflow-hidden">
-                <div className={`font-bold flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap ${isMonthView ? 'text-xs' : 'text-sm'}`}>
-                    <span className="mr-1">{statusEmoji}</span>
-                    {(event as any).title || `${apt.pet?.name || 'Pet'} (${apt.pet?.species || ''})`}
+            <div className="flex-1 flex flex-col gap-1 overflow-hidden">
+                <div className="font-bold text-sm leading-tight overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1">
+                    <span>{statusEmoji}</span>
+                    <span>{apt.pet?.name || 'Pet'}</span>
+                    {apt.pet?.species && (
+                        <span className="opacity-90 text-xs font-normal">({apt.pet.species})</span>
+                    )}
                 </div>
                 {isDoctor ? (
-                    <>
-                        <div className={`flex-shrink-0 opacity-95 overflow-hidden text-ellipsis whitespace-nowrap ${isMonthView ? 'text-[0.5625rem]' : 'text-xs'}`}>
-                            👤 {apt.client?.full_name || 'Unknown Client'}
-                        </div>
-                        <div className={`flex-shrink-0 opacity-95 overflow-hidden text-ellipsis whitespace-nowrap ${isMonthView ? 'text-[0.5625rem]' : 'text-xs'}`}>
-                            🐾 {apt.pet?.name || 'Pet'} ({apt.pet?.species || ''})
-                        </div>
-                    </>
+                    <div className="text-xs opacity-95 overflow-hidden text-ellipsis whitespace-nowrap">
+                        👤 {apt.client?.full_name || 'Client'}
+                    </div>
                 ) : (
-                    <div className={`flex-shrink-0 opacity-95 overflow-hidden text-ellipsis whitespace-nowrap ${isMonthView ? 'text-[0.5625rem]' : 'text-xs'}`}>
-                        👨‍⚕️ {apt.doctor?.full_name}
+                    <div className="text-xs opacity-95 overflow-hidden text-ellipsis whitespace-nowrap">
+                        👨‍⚕️ {apt.doctor?.full_name || 'Doctor'}
                     </div>
                 )}
-                {apt.reason && !isMonthView && (
-                    <div className="text-[0.625rem] opacity-85 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap flex-shrink-0">
+                {apt.reason && (
+                    <div className="text-[0.625rem] opacity-85 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
                         💬 {apt.reason}
                     </div>
                 )}
             </div>
-            {onCancel && !isCancelled && !isCompleted && !isMonthView && (
+            {onCancel && !isCancelled && !isCompleted && (
                 <button
                     onClick={handleCancel}
-                    className="absolute top-1 right-1 bg-white/25 border border-white/35 rounded p-1.5 cursor-pointer flex items-center justify-center transition-all backdrop-blur-sm text-white hover:bg-white/45 hover:border-white/60 hover:scale-110 active:scale-95 w-5 h-5 flex-shrink-0"
+                    className="absolute top-1 right-1 bg-white/30 border border-white/40 rounded p-1 cursor-pointer flex items-center justify-center transition-all backdrop-blur-sm text-white hover:bg-white/50 hover:border-white/70 hover:scale-110 active:scale-95 w-5 h-5 flex-shrink-0"
                     aria-label={t('appointments.actions.cancel')}
                     title={t('appointments.actions.cancel')}
                 >
@@ -151,12 +166,17 @@ export const AppointmentCalendar = ({
     const events: CalendarEvent[] = useMemo(() => {
         const isDoctor = userRole === UserRole.DOCTOR;
         return appointments.map(apt => {
-            // Для доктора показываем клиента и питомца, для клиента - только питомца
+            // Для заголовка используем только имя питомца (для клиента) или имя клиента (для доктора)
+            // Полная информация будет в CustomEvent компоненте
             let title = '';
             if (isDoctor) {
-                title = `${apt.client?.full_name || 'Client'}: ${apt.pet?.name || 'Pet'} (${apt.pet?.species || ''})`;
+                // Для доктора - имя клиента и питомца коротко
+                const petName = apt.pet?.name || 'Pet';
+                const clientName = apt.client?.full_name || 'Client';
+                title = `${clientName}: ${petName}`;
             } else {
-                title = `${apt.pet?.name || 'Pet'} (${apt.pet?.species || ''})`;
+                // Для клиента - только имя питомца
+                title = apt.pet?.name || 'Pet';
             }
             return {
                 id: apt.id,
@@ -251,9 +271,19 @@ export const AppointmentCalendar = ({
                 }
                 .rbc-month-view .rbc-event {
                     margin: 0.125rem 0.25rem;
+                    border-radius: 0.25rem;
+                    overflow: hidden;
                 }
                 .rbc-time-view .rbc-event {
                     margin: 0.125rem 0.375rem;
+                    border-radius: 0.375rem;
+                }
+                .rbc-month-view .rbc-day-bg {
+                    min-height: 100px;
+                }
+                .rbc-month-view .rbc-event {
+                    font-size: 0.625rem;
+                    line-height: 1.2;
                 }
                 .rbc-agenda-view table {
                     width: 100%;
