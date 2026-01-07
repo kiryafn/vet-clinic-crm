@@ -181,9 +181,9 @@
       "empty_desc": "Book your first visit to see it here!"
     },
     "status": {
-      "PLANNED": "Planned",
-      "COMPLETED": "Completed",
-      "CANCELLED": "Cancelled"
+      "planned": "Planned",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
     },
     "errors": {
       "load_failed": "Failed to load appointments",
