@@ -60,13 +60,30 @@ export const AppointmentsPage = () => {
     };
 
     // Transform appointments for Big Calendar
-    const events = appointments.map(apt => ({
-        id: apt.id,
-        title: `${apt.pet.name} (${apt.pet.species})`, // Title focused on Pet
-        start: new Date(apt.date_time),
-        end: new Date(new Date(apt.date_time).getTime() + apt.duration_minutes * 60000),
-        resource: apt
-    }));
+    const events = appointments
+        .filter(apt => apt.date_time && apt.duration_minutes) // Filter invalid
+        .map(apt => {
+            const start = new Date(apt.date_time);
+            const end = new Date(start.getTime() + (apt.duration_minutes || 45) * 60000);
+            return {
+                id: apt.id,
+                title: `${apt.pet.name} (${apt.pet.species})`,
+                start,
+                end,
+                resource: apt
+            };
+        });
+
+    // ... EventComponent code ... (unchanged, just mentioning to keep context if I were rewriting whole file, but I will use specific chunks)
+
+    // Fix Min/Max dates to use a valid year (e.g. 1970) to avoid 0-year issues
+    const minTime = new Date(1970, 0, 1, 8, 0, 0);
+    const maxTime = new Date(1970, 0, 1, 20, 0, 0);
+
+    // ...
+
+    min = { minTime }
+    max = { maxTime }
 
     // Custom Event Component
     const EventComponent = ({ event }: any) => {
@@ -179,8 +196,8 @@ export const AppointmentsPage = () => {
                             components={{
                                 event: EventComponent
                             }}
-                            min={new Date(0, 0, 0, 8, 0, 0)} // Start at 8 AM
-                            max={new Date(0, 0, 0, 20, 0, 0)} // End at 8 PM
+                            min={new Date(1970, 0, 1, 8, 0, 0)} // Start at 8 AM
+                            max={new Date(1970, 0, 1, 20, 0, 0)} // End at 8 PM
                             step={15}
                             timeslots={4}
                         />
