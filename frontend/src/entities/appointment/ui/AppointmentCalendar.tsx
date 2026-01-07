@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, type MouseEvent } from 'react';
 import { Calendar, dateFnsLocalizer, Views, type View, type Event, type SlotInfo } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS, uk } from 'date-fns/locale';
@@ -19,49 +19,24 @@ interface CalendarEvent extends Event {
 
 interface CustomEventProps {
     event: CalendarEvent;
-    onCancel?: (id: number) => void;
-    onComplete?: (id: number) => void;
-    onDelete?: (id: number) => void;
     onSelect?: (appointment: Appointment) => void;
     userRole?: UserRole;
     view?: View;
 }
 
-const CustomEvent = ({ event, onCancel, onComplete, onDelete, onSelect, userRole, view }: CustomEventProps) => {
+const CustomEvent = ({ event, onSelect, userRole, view }: CustomEventProps) => {
     const { t } = useTranslation();
     const apt = event.resource;
     const isCancelled = apt.status === AppointmentStatus.CANCELLED;
     const isCompleted = apt.status === AppointmentStatus.COMPLETED;
     const isDoctor = userRole === UserRole.DOCTOR;
-    const isAdmin = userRole === UserRole.ADMIN;
     const isMonthView = view === Views.MONTH;
     const isAgendaView = view === Views.AGENDA;
 
-    const handleClick = (e: React.MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
         e.stopPropagation();
         if (onSelect) {
             onSelect(apt);
-        }
-    };
-
-    const handleCancel = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (onCancel && !isCancelled && !isCompleted) {
-            onCancel(apt.id);
-        }
-    };
-
-    const handleComplete = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (onComplete && !isCancelled && !isCompleted) {
-            onComplete(apt.id);
-        }
-    };
-
-    const handleDelete = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (onDelete && isAdmin) {
-            onDelete(apt.id);
         }
     };
 
@@ -365,12 +340,9 @@ export const AppointmentCalendar = ({
                 slotPropGetter={slotPropGetter}
                 views={[Views.MONTH, Views.WEEK, Views.AGENDA]}
                 components={{
-                    event: (props) => (
+                    event: (props: { event: Event }) => (
                         <CustomEvent
                             event={props.event as CalendarEvent}
-                            onCancel={onCancelAppointment}
-                            onComplete={onCompleteAppointment}
-                            onDelete={onDeleteAppointment}
                             onSelect={(apt) => setSelectedAppointment(apt)}
                             userRole={userRole}
                             view={view}
@@ -385,10 +357,10 @@ export const AppointmentCalendar = ({
                     dayFormat: 'EEEE, MMMM d',
                     weekdayFormat: 'EEEE',
                     dayHeaderFormat: 'EEEE, MMMM d',
-                    dayRangeHeaderFormat: ({ start, end }) =>
+                    dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
                         `${format(start, 'MMM d', { locale: locales[i18n.language as keyof typeof locales] })} - ${format(end, 'MMM d', { locale: locales[i18n.language as keyof typeof locales] })}`,
                     timeGutterFormat: 'HH:mm',
-                    eventTimeRangeFormat: ({ start, end }) =>
+                    eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
                         `${format(start, 'HH:mm')} - ${format(end, 'HH:mm')}`,
                 }}
             />
@@ -401,8 +373,6 @@ export const AppointmentCalendar = ({
                     onComplete={onCompleteAppointment}
                     onDelete={onDeleteAppointment}
                     userRole={userRole}
-                    t={t}
-                    i18n={i18n}
                 />
             )}
         </div>
@@ -416,8 +386,6 @@ interface AppointmentDetailModalProps {
     onComplete?: (id: number) => void;
     onDelete?: (id: number) => void;
     userRole?: UserRole;
-    t: (key: string, fallback?: string) => string;
-    i18n: { language: string };
 }
 
 const AppointmentDetailModal = ({
@@ -427,9 +395,8 @@ const AppointmentDetailModal = ({
     onComplete,
     onDelete,
     userRole,
-    t,
-    i18n,
 }: AppointmentDetailModalProps) => {
+    const { t, i18n } = useTranslation();
     const isCancelled = apt.status === AppointmentStatus.CANCELLED;
     const isCompleted = apt.status === AppointmentStatus.COMPLETED;
     const isDoctor = userRole === UserRole.DOCTOR;
@@ -478,7 +445,7 @@ const AppointmentDetailModal = ({
 
     const { date: dateStr, time: timeStr } = formatDateTime(apt.date_time);
 
-    const statusColors = {
+    const statusColors: Record<string, string> = {
         planned: 'bg-blue-100 text-blue-800',
         completed: 'bg-green-100 text-green-800',
         cancelled: 'bg-red-100 text-red-800',
