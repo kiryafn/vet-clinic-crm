@@ -67,7 +67,8 @@ export const useBookAppointment = () => {
             }
         };
         fetchData();
-    }, [t, extractError]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Fetch only once on mount
 
     useEffect(() => {
         if (!doctorId || !date) {
@@ -75,23 +76,35 @@ export const useBookAppointment = () => {
             return;
         }
 
+        let cancelled = false;
         const fetchSlots = async () => {
             setLoadingSlots(true);
             setError('');
             try {
                 const availableSlots = await appointmentApi.getSlots(Number(doctorId), date);
-                setSlots(availableSlots || []);
+                if (!cancelled) {
+                    setSlots(availableSlots || []);
+                }
             } catch (err: any) {
-                console.error('Error fetching slots:', err);
-                const errorMessage = extractError(err) || t('booking.errors.slots_failed');
-                setError(errorMessage);
+                if (!cancelled) {
+                    console.error('Error fetching slots:', err);
+                    const errorMessage = extractError(err) || t('booking.errors.slots_failed');
+                    setError(errorMessage);
+                }
             } finally {
-                setLoadingSlots(false);
+                if (!cancelled) {
+                    setLoadingSlots(false);
+                }
             }
         };
 
         fetchSlots();
-    }, [doctorId, date, t, extractError]);
+
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [doctorId, date]); // Only depend on doctorId and date
 
     const validate = useCallback((): boolean => {
         const newErrors: ValidationErrors = {};
@@ -164,6 +177,37 @@ export const useBookAppointment = () => {
         });
     }, []);
 
+    const handleSetDoctorId = useCallback((id: string) => {
+        setDoctorId(id);
+        setSelectedSlot(null);
+        clearValidationError('doctorId');
+    }, [clearValidationError]);
+
+    const handleSetPetId = useCallback((id: string) => {
+        setPetId(id);
+        clearValidationError('petId');
+    }, [clearValidationError]);
+
+    const handleSetDate = useCallback((d: string) => {
+        setDate(d);
+        setSelectedSlot(null);
+        clearValidationError('date');
+    }, [clearValidationError]);
+
+    const handleSetSelectedSlot = useCallback((slot: string | null) => {
+        setSelectedSlot(slot);
+        clearValidationError('slot');
+    }, [clearValidationError]);
+
+    const handleSetDescription = useCallback((desc: string) => {
+        setDescription(desc);
+        clearValidationError('description');
+    }, [clearValidationError]);
+
+    const clearError = useCallback(() => {
+        setError('');
+    }, []);
+
     return {
         // Data
         doctors,
@@ -181,30 +225,13 @@ export const useBookAppointment = () => {
         loadingSlots,
         validationErrors,
         // Setters
-        setDoctorId: (id: string) => {
-            setDoctorId(id);
-            setSelectedSlot(null);
-            clearValidationError('doctorId');
-        },
-        setPetId: (id: string) => {
-            setPetId(id);
-            clearValidationError('petId');
-        },
-        setDate: (d: string) => {
-            setDate(d);
-            setSelectedSlot(null);
-            clearValidationError('date');
-        },
-        setSelectedSlot: (slot: string | null) => {
-            setSelectedSlot(slot);
-            clearValidationError('slot');
-        },
-        setDescription: (desc: string) => {
-            setDescription(desc);
-            clearValidationError('description');
-        },
+        setDoctorId: handleSetDoctorId,
+        setPetId: handleSetPetId,
+        setDate: handleSetDate,
+        setSelectedSlot: handleSetSelectedSlot,
+        setDescription: handleSetDescription,
         // Actions
         handleSubmit,
-        clearError: () => setError(''),
+        clearError,
     };
 };
