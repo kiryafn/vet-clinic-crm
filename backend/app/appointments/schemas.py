@@ -13,7 +13,7 @@ class AppointmentCreate(BaseModel):
     doctor_id: int
     pet_id: int
     date_time: datetime
-    user_description: str | None = None
+    reason: str | None = None
 
 class AppointmentUpdate(BaseModel):
     doctor_notes: str
@@ -24,7 +24,7 @@ class AppointmentRead(BaseModel):
     date_time: datetime
     duration_minutes: int
     doctor_notes : str | None
-    user_description: str | None = None
+    reason: str | None = None
 
 
     client: ClientRead

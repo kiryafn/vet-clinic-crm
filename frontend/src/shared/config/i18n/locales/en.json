@@ -109,7 +109,7 @@
       "name": "Pet Name",
       "type": "Pet Type",
       "breed": "Breed",
-      "birth_date": "Date of Birth (Month/Year)",
+      "birth_date": "Date of Birth (YYYY-MM)",
       "weight": "Weight (kg)",
       "placeholder_name": "e.g. Buddy",
       "placeholder_breed": "e.g. Golden Retriever",

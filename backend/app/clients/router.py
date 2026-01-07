@@ -1,10 +1,10 @@
+from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.core.db import SessionDep
 from app.users import service as user_service
 from app.clients import schemas, service
 from app.users.dependencies import get_current_admin
 from app.users.models import User
-from typing import List
 
 router = APIRouter(prefix="/clients", tags=["Clients"])
 
@@ -13,7 +13,6 @@ async def register_client(
     client_in: schemas.ClientCreate,
     db: SessionDep
 ):
-
     existing_user = await user_service.get_user_by_email(db, email=str(client_in.email))
     if existing_user:
         raise HTTPException(
@@ -26,9 +25,9 @@ async def register_client(
 
 @router.get("/", response_model=List[schemas.ClientRead])
 async def read_clients(
+    db: SessionDep,
     skip: int = 0,
     limit: int = 100,
-    db: SessionDep = Depends(SessionDep),
     admin: User = Depends(get_current_admin)
 ):
     return await service.get_clients(db, skip=skip, limit=limit)

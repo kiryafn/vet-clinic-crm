@@ -5,8 +5,8 @@ export const PetSpecies = {
     FISH: 'FISH',
     RABBIT: 'RABBIT',
     HAMSTER: 'HAMSTER',
-    GUINEA_PIG: 'GUINEA_PIG',
-    MOUSE_RAT: 'MOUSE_RAT',
+    GUINEA_PIG: 'GUINEA PIG',
+    MOUSE_RAT: 'MOUSE RAT',
     FERRET: 'FERRET',
     REPTILE: 'REPTILE',
     AMPHIBIAN: 'AMPHIBIAN',
@@ -37,4 +37,4 @@ export interface PetCreate {
     birth_date?: string | null;
 }
 
-export interface PetUpdate extends Partial(PetCreate) { }
+export type PetUpdate = Partial<PetCreate>;

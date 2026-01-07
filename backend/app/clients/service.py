@@ -1,5 +1,6 @@
-# backend/app/clients/service.py
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.users.models import User, UserRole
 from app.clients.models import Client
 from app.clients.schemas import ClientCreate
@@ -7,14 +8,16 @@ from app.core.security import get_password_hash
 
 
 async def create_client(db: AsyncSession, client_in: ClientCreate) -> Client:
+    # 1. Создаем User (Auth)
     db_user = User(
         email=str(client_in.email),
         password_hash=get_password_hash(client_in.password),
         role=UserRole.CLIENT
     )
     db.add(db_user)
-    await db.flush()
+    await db.flush() # Получаем ID
 
+    # 2. Создаем Client (Profile)
     db_client = Client(
         user_id=db_user.id,
         full_name=client_in.full_name,
@@ -30,6 +33,33 @@ async def create_client(db: AsyncSession, client_in: ClientCreate) -> Client:
 
 
 async def get_client_by_user_id(db: AsyncSession, user_id: int) -> Client | None:
-    from sqlalchemy import select
-    result = await db.execute(select(Client).filter(Client.user_id == user_id))
+    query = select(Client).filter(Client.user_id == user_id)
+    result = await db.execute(query)
     return result.scalars().first()
+
+
+async def get_clients(db: AsyncSession, skip: int = 0, limit: int = 5) -> list[Client]:
+    query = select(Client).offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
+async def delete_client(db: AsyncSession, client_id: int) -> bool:
+    query = select(Client).where(Client.id == client_id)
+    result = await db.execute(query)
+    client = result.scalars().first()
+
+    if not client:
+        return False
+
+    user_query = select(User).where(User.id == client.user_id)
+    user_result = await db.execute(user_query)
+    user = user_result.scalars().first()
+
+    if user:
+        await db.delete(user)
+    else:
+        await db.delete(client)
+
+    await db.commit()
+    return True

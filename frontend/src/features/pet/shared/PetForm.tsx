@@ -37,9 +37,8 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
             setName(initialValues.name);
             setSpecies(initialValues.species as PetSpecies);
             setBreed(initialValues.breed || '');
-            // Format age date for input if full date is provided
             if (initialValues.age && initialValues.age.length > 7) {
-                setAge(initialValues.age.substring(0, 7)); // YYYY-MM
+                setAge(initialValues.age.substring(0, 7));
             } else {
                 setAge(initialValues.age || '');
             }

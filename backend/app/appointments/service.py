@@ -1,41 +1,31 @@
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+
 from app.appointments.models import Appointment
 from app.appointments.schemas import AppointmentCreate
 from fastapi import HTTPException
 
-# Константа длительности приема (45 минут)
 APPOINTMENT_DURATION = timedelta(minutes=45)
 
 
 def ensure_utc(dt: datetime) -> datetime:
-    """
-    Вспомогательная функция: 
-    1. Если дата 'наивная' (без зоны), считаем её UTC и ставим tzinfo=utc.
-    2. Если 'aware', приводим к UTC.
-    """
+
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
 
 
 def ensure_naive_utc(dt: datetime) -> datetime:
-    """
-    Приводит к UTC и убирает tzinfo для совместимости с SQLite (который хранит строки).
-    """
+
     return ensure_utc(dt).replace(tzinfo=None)
 
 
 async def check_availability(db: AsyncSession, doctor_id: int, new_time: datetime) -> bool:
-    """
-    Проверяет, свободен ли интервал [new_time, new_time + 45min].
-    """
-    # 1. Приводим входящее время к Naive UTC
     new_start = ensure_naive_utc(new_time)
     new_end = new_start + APPOINTMENT_DURATION
 
-    # 2. Получаем все активные записи врача
     stmt = select(Appointment).filter(
         Appointment.doctor_id == doctor_id,
         Appointment.status != "cancelled"
@@ -44,32 +34,24 @@ async def check_availability(db: AsyncSession, doctor_id: int, new_time: datetim
     existing_appointments = result.scalars().all()
 
     for appt in existing_appointments:
-        # 3. Извлекаем и нормализуем дату из базы (она там Naive UTC скорей всего)
         appt_start = ensure_naive_utc(appt.date_time)
         appt_end = appt_start + APPOINTMENT_DURATION
 
-        # 4. Проверка пересечения интервалов:
         if new_start < appt_end and new_end > appt_start:
-            return False  # Пересечение найдено, слот занят
+            return False
 
     return True
 
 
 async def get_day_slots(db: AsyncSession, doctor_id: int, date: datetime) -> list[datetime]:
-    """
-    Возвращает список доступных начал приемов (слотов) на указанный день.
-    """
-    # Нормализуем входящую дату
     target_date = ensure_naive_utc(date)
     
     start_of_day = target_date.replace(hour=9, minute=0, second=0, microsecond=0)
     end_of_day = target_date.replace(hour=18, minute=0, second=0, microsecond=0)
 
-    # Ищем записи за этот календарный день
     search_start = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
     search_end = search_start + timedelta(days=1)
     
-    # SQLAlchemy filter
     stmt = select(Appointment).filter(
         Appointment.doctor_id == doctor_id,
         Appointment.status != "cancelled",
@@ -123,12 +105,12 @@ async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate
         raise HTTPException(status_code=409, detail="This time slot is already booked")
 
     # Создаем объект
-    data = appointment_in.model_dump(exclude={"date_time", "user_description"})
+    data = appointment_in.model_dump(exclude={"date_time", "reason"})
     db_appointment = Appointment(
         **data,
         date_time=appt_time,
         client_id=client_id,
-        reason=appointment_in.user_description or "No description provided" # Ensure it's not null if field is optional in schema but required in DB
+        reason=appointment_in.reason or "No description provided"
     )
 
     db.add(db_appointment)

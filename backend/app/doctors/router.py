@@ -21,8 +21,6 @@ async def create_doctor(
         raise HTTPException(status_code=400, detail="Email already registered")
 
     # Removed Specialization table lookup since we use Enum now
-    
-    try:
 
     try:
         db_doctor = await service.create_doctor(db, doctor_in)

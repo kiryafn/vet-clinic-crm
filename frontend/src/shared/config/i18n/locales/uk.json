@@ -109,7 +109,7 @@
       "name": "Ім'я",
       "type": "Вид",
       "breed": "Порода",
-      "birth_date": "Дата народження (Місяць/Рік)",
+      "birth_date": "Дата народження (YYYY-MM)",
       "weight": "Вага (кг)",
       "placeholder_name": "напр. Пушок",
       "placeholder_breed": "напр. Золотистий ретривер",
