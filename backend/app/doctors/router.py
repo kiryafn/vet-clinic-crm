@@ -38,3 +38,39 @@ async def get_doctors(
     limit: int = 100
 ):
     return await service.get_doctors(db, skip=skip, limit=limit)
+
+
+@router.get("/{doctor_id}", response_model=schemas.DoctorRead)
+async def get_doctor(
+    doctor_id: int,
+    db: SessionDep,
+    admin: User = Depends(get_current_admin)
+):
+    doctor = await service.get_doctor_by_id(db, doctor_id)
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+    return doctor
+
+
+@router.patch("/{doctor_id}", response_model=schemas.DoctorRead)
+async def update_doctor(
+    doctor_id: int,
+    doctor_update: schemas.DoctorUpdate,
+    db: SessionDep,
+    admin: User = Depends(get_current_admin)
+):
+    doctor = await service.update_doctor(db, doctor_id, doctor_update)
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+    return doctor
+
+
+@router.delete("/{doctor_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_doctor(
+    doctor_id: int,
+    db: SessionDep,
+    admin: User = Depends(get_current_admin)
+):
+    success = await service.delete_doctor(db, doctor_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Doctor not found")

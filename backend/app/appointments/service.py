@@ -149,12 +149,22 @@ async def cancel_appointment(db: AsyncSession, appointment_id: int):
     if not appointment:
         return None
 
-    appointment.status = "cancelled"  # Предполагаем, что есть поле status или метод cancel()
-    # appointment.cancel() # Если есть метод модели
+    appointment.cancel()  # Используем метод модели
 
     await db.commit()
+    await db.refresh(appointment)
     # Возвращаем объект (он уже с подгруженными связями из get_appointment)
     return appointment
+
+
+async def delete_appointment(db: AsyncSession, appointment_id: int) -> bool:
+    appointment = await get_appointment(db, appointment_id)
+    if not appointment:
+        return False
+    
+    await db.delete(appointment)
+    await db.commit()
+    return True
 
 
 async def get_available_slots(db: AsyncSession, doctor_id: int, date: datetime) -> list[datetime]:

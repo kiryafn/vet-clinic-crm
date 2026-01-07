@@ -19,16 +19,18 @@ interface CalendarEvent extends Event {
 interface CustomEventProps {
     event: CalendarEvent;
     onCancel?: (id: number) => void;
+    onDelete?: (id: number) => void;
     userRole?: UserRole;
     view?: View;
 }
 
-const CustomEvent = ({ event, onCancel, userRole, view }: CustomEventProps) => {
+const CustomEvent = ({ event, onCancel, onDelete, userRole, view }: CustomEventProps) => {
     const { t } = useTranslation();
     const apt = event.resource;
     const isCancelled = apt.status === AppointmentStatus.CANCELLED;
     const isCompleted = apt.status === AppointmentStatus.COMPLETED;
     const isDoctor = userRole === UserRole.DOCTOR;
+    const isAdmin = userRole === UserRole.ADMIN;
     const isMonthView = view === Views.MONTH;
     const isAgendaView = view === Views.AGENDA;
 
@@ -36,6 +38,13 @@ const CustomEvent = ({ event, onCancel, userRole, view }: CustomEventProps) => {
         e.stopPropagation();
         if (onCancel && !isCancelled && !isCompleted) {
             onCancel(apt.id);
+        }
+    };
+
+    const handleDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onDelete && isAdmin) {
+            onDelete(apt.id);
         }
     };
 
@@ -124,16 +133,28 @@ const CustomEvent = ({ event, onCancel, userRole, view }: CustomEventProps) => {
                     </div>
                 )}
             </div>
-            {onCancel && !isCancelled && !isCompleted && (
-                <button
-                    onClick={handleCancel}
-                    className="absolute top-1 right-1 bg-white/30 border border-white/40 rounded p-1 cursor-pointer flex items-center justify-center transition-all backdrop-blur-sm text-white hover:bg-white/50 hover:border-white/70 hover:scale-110 active:scale-95 w-5 h-5 flex-shrink-0"
-                    aria-label={t('appointments.actions.cancel')}
-                    title={t('appointments.actions.cancel')}
-                >
-                    <X size={10} />
-                </button>
-            )}
+            <div className="absolute top-1 right-1 flex gap-1">
+                {isAdmin && onDelete && (
+                    <button
+                        onClick={handleDelete}
+                        className="bg-red-500/80 border border-red-600/60 rounded p-1 cursor-pointer flex items-center justify-center transition-all backdrop-blur-sm text-white hover:bg-red-600/90 hover:border-red-700/80 hover:scale-110 active:scale-95 w-5 h-5 flex-shrink-0"
+                        aria-label={t('appointments.actions.delete', 'Delete')}
+                        title={t('appointments.actions.delete', 'Delete')}
+                    >
+                        <X size={10} />
+                    </button>
+                )}
+                {onCancel && !isCancelled && !isCompleted && (
+                    <button
+                        onClick={handleCancel}
+                        className="bg-white/30 border border-white/40 rounded p-1 cursor-pointer flex items-center justify-center transition-all backdrop-blur-sm text-white hover:bg-white/50 hover:border-white/70 hover:scale-110 active:scale-95 w-5 h-5 flex-shrink-0"
+                        aria-label={t('appointments.actions.cancel')}
+                        title={t('appointments.actions.cancel')}
+                    >
+                        <X size={10} />
+                    </button>
+                )}
+            </div>
         </div>
     );
 };
@@ -146,6 +167,7 @@ interface AppointmentCalendarProps {
     onDateChange: (date: Date) => void;
     onRangeChange: (range: Date[] | { start: Date; end: Date }) => void;
     onCancelAppointment?: (id: number) => void;
+    onDeleteAppointment?: (id: number) => void;
     onSelectSlot?: (slotInfo: SlotInfo) => void;
     userRole?: UserRole;
 }
@@ -158,6 +180,7 @@ export const AppointmentCalendar = ({
     onDateChange,
     onRangeChange,
     onCancelAppointment,
+    onDeleteAppointment,
     onSelectSlot,
     userRole,
 }: AppointmentCalendarProps) => {
@@ -343,6 +366,7 @@ export const AppointmentCalendar = ({
                         <CustomEvent
                             event={props.event as CalendarEvent}
                             onCancel={onCancelAppointment}
+                            onDelete={onDeleteAppointment}
                             userRole={userRole}
                             view={view}
                         />

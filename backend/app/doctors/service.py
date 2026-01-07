@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.users.models import User, UserRole
 from app.doctors.models import Doctor
-from app.doctors.schemas import DoctorCreate
+from app.doctors.schemas import DoctorCreate, DoctorUpdate
 from app.core.security import get_password_hash
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -41,6 +41,26 @@ async def get_doctor_by_user_id(db: AsyncSession, user_id: int) -> Doctor | None
     query = select(Doctor).filter(Doctor.user_id == user_id)
     result = await db.execute(query)
     return result.scalars().first()
+
+
+async def get_doctor_by_id(db: AsyncSession, doctor_id: int) -> Doctor | None:
+    query = select(Doctor).filter(Doctor.id == doctor_id)
+    result = await db.execute(query)
+    return result.scalars().first()
+
+
+async def update_doctor(db: AsyncSession, doctor_id: int, doctor_update: DoctorUpdate) -> Doctor | None:
+    doctor = await get_doctor_by_id(db, doctor_id)
+    if not doctor:
+        return None
+    
+    update_data = doctor_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(doctor, field, value)
+    
+    await db.commit()
+    await db.refresh(doctor)
+    return doctor
 
 
 async def delete_doctor(db: AsyncSession, doctor_id: int) -> bool:

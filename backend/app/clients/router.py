@@ -33,6 +33,31 @@ async def read_clients(
     return await service.get_clients(db, skip=skip, limit=limit)
 
 
+@router.get("/{client_id}", response_model=schemas.ClientRead)
+async def get_client(
+    client_id: int,
+    db: SessionDep,
+    admin: User = Depends(get_current_admin)
+):
+    client = await service.get_client_by_id(db, client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    return client
+
+
+@router.patch("/{client_id}", response_model=schemas.ClientRead)
+async def update_client(
+    client_id: int,
+    client_update: schemas.ClientUpdate,
+    db: SessionDep,
+    admin: User = Depends(get_current_admin)
+):
+    client = await service.update_client(db, client_id, client_update)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    return client
+
+
 @router.delete("/{client_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_client(
     client_id: int,

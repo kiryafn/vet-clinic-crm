@@ -150,7 +150,9 @@
       "list_view": "List View",
       "book": "Book Appointment",
       "cancel": "Cancel",
-      "confirm_cancel": "Are you sure you want to cancel this appointment?"
+      "delete": "Delete",
+      "confirm_cancel": "Are you sure you want to cancel this appointment?",
+      "confirm_delete": "Are you sure you want to delete this appointment? This action cannot be undone."
     },
     "list": {
       "headers": {
@@ -171,7 +173,14 @@
     },
     "errors": {
       "load_failed": "Failed to load appointments",
-      "cancel_failed": "Failed to cancel appointment"
+      "cancel_failed": "Failed to cancel appointment",
+      "delete_failed": "Failed to delete appointment"
+    },
+    "fallbacks": {
+      "pet": "Pet",
+      "client": "Client",
+      "doctor": "Doctor",
+      "no_description": "No description provided"
     }
   },
   "doctors": {
@@ -179,19 +188,25 @@
     "manage_subtitle": "Register new staff and view existing doctors",
     "add_new": "Register New Doctor",
     "list_empty": "No doctors found",
+    "list_title": "Doctor List",
+    "years_exp": "years exp",
+    "edit_coming_soon": "Edit feature coming soon!",
+    "delete_confirm": "Delete doctor?",
+    "delete_failed": "Failed to delete",
     "form": {
       "title": "Register New Doctor",
+      "edit_title": "Edit Doctor",
       "full_name": "Full Name",
       "email": "Email",
       "password": "Password",
       "specialization": "Specialization",
-      "bio": "Biography / Description",
-      "hourly_rate": "Hourly Rate ($)",
-      "submit": "Register Doctor",
-      "placeholders": {
-        "specialization": "e.g. Surgeon",
-        "bio": "Brief description of experience..."
-      }
+      "bio": "Bio",
+      "phone": "Phone Number",
+      "experience": "Experience (years)",
+      "price": "Price ($)",
+      "submit": "Create Doctor",
+      "create_failed": "Failed to create doctor",
+      "update_failed": "Failed to update doctor"
     },
     "table": {
       "name": "Name",
@@ -199,6 +214,14 @@
       "email": "Email",
       "rate": "Rate",
       "actions": "Actions"
+    },
+    "specializations": {
+      "OPHTHALMOLOGIST": "Ophthalmologist",
+      "DERMATOLOGIST": "Dermatologist",
+      "CARDIOLOGIST": "Cardiologist",
+      "THERAPIST": "Therapist",
+      "SURGEON": "Surgeon",
+      "DENTIST": "Dentist"
     }
   },
   "admin": {
@@ -255,10 +278,12 @@
     "address": "Address",
     "actions": "Actions",
     "edit": "Edit",
+    "edit_title": "Edit Client",
     "delete": "Delete",
     "empty": "No clients found.",
     "delete_confirm": "Are you sure you want to delete this client?",
     "delete_failed": "Failed to delete client",
+    "update_failed": "Failed to update client",
     "edit_coming_soon": "Edit coming soon!",
     "errors": {
       "fetch_failed": "Failed to fetch clients"
@@ -280,149 +305,5 @@
   "doctor_schedule": {
     "empty_title": "No appointments scheduled",
     "empty_desc": "Your schedule is clear!"
-  },
-  "appointments": {
-    "page_title": "Appointments",
-    "page_subtitle": "Manage your schedule and visits",
-    "actions": {
-      "calendar_view": "Calendar",
-      "list_view": "List View",
-      "book": "Book Appointment",
-      "cancel": "Cancel",
-      "confirm_cancel": "Are you sure you want to cancel this appointment?"
-    },
-    "list": {
-      "headers": {
-        "date_time": "Date & Time",
-        "client": "Client",
-        "pet": "Pet",
-        "doctor": "Doctor",
-        "status": "Status",
-        "reason": "Reason"
-      },
-      "empty_title": "No appointments yet",
-      "empty_desc": "Book your first visit to see it here!"
-    },
-    "status": {
-      "PLANNED": "Planned",
-      "COMPLETED": "Completed",
-      "CANCELLED": "Cancelled"
-    },
-    "errors": {
-      "load_failed": "Failed to load appointments",
-      "cancel_failed": "Failed to cancel appointment"
-    },
-    "fallbacks": {
-      "pet": "Pet",
-      "client": "Client",
-      "doctor": "Doctor",
-      "no_description": "No description provided"
-    }
-  },
-  "pet": {
-    "list_title": "My Pets",
-    "list_subtitle": "Manage your furry friends profile and details",
-    "back_home": "Back to Home",
-    "add_new": "Add New Pet",
-    "no_pets_title": "No pets added yet",
-    "no_pets_desc": "Add your first pet to get started!",
-    "loading": "Loading your pets...",
-    "table": {
-      "profile": "Pet Profile",
-      "species": "Species",
-      "breed": "Breed",
-      "age": "Age",
-      "yrs": "yrs",
-      "mos": "mos",
-      "actions": "Actions",
-      "unknown": "Unknown"
-    },
-    "form": {
-      "title_add": "Add New Pet",
-      "title_edit": "Edit Pet",
-      "name": "Pet Name",
-      "type": "Pet Type",
-      "breed": "Breed",
-      "birth_date": "Date of Birth (YYYY-MM)",
-      "weight": "Weight (kg)",
-      "placeholder_name": "e.g. Buddy",
-      "placeholder_breed": "e.g. Golden Retriever",
-      "placeholder_weight": "kg",
-      "cancel": "Cancel",
-      "save": "Save Changes",
-      "add": "Add Pet"
-    },
-    "validation": {
-      "name_required": "Name is required",
-      "name_min": "Name must be at least 1 character",
-      "name_max": "Name cannot exceed 50 characters",
-      "breed_max": "Breed cannot exceed 50 characters",
-      "birth_date_required": "Birth date is required",
-      "birth_date_future": "Birth date cannot be in the future",
-      "weight_positive": "Weight must be a positive number",
-      "weight_max": "Weight cannot exceed 1000 kg"
-    },
-    "messages": {
-      "delete_confirm": "Are you sure you want to delete this pet?",
-      "delete_fail": "Failed to delete pet",
-      "update_fail": "Failed to update pet",
-      "add_fail": "Failed to add pet",
-      "invalid_date": "Invalid date format. Please use YYYY-MM."
-    },
-    "species": {
-      "dog": "Dog",
-      "cat": "Cat",
-      "bird": "Bird",
-      "fish": "Fish",
-      "rabbit": "Rabbit",
-      "hamster": "Hamster",
-      "guinea_pig": "Guinea Pig",
-      "mouse_rat": "Mouse/Rat",
-      "ferret": "Ferret",
-      "reptile": "Reptile",
-      "amphibian": "Amphibian",
-      "horse": "Horse",
-      "livestock": "Livestock",
-      "exotic": "Exotic",
-      "other": "Other"
-    }
-  },
-  "doctors": {
-    "manage_title": "Manage Doctors",
-    "manage_subtitle": "Register new staff and view existing doctors",
-    "add_new": "Register New Doctor",
-    "list_empty": "No doctors found",
-    "list_title": "Doctor List",
-    "years_exp": "years exp",
-    "edit_coming_soon": "Edit feature coming soon!",
-    "delete_confirm": "Delete doctor?",
-    "delete_failed": "Failed to delete",
-    "form": {
-      "title": "Register New Doctor",
-      "full_name": "Full Name",
-      "email": "Email",
-      "password": "Password",
-      "specialization": "Specialization",
-      "bio": "Bio",
-      "experience": "Experience (years)",
-      "price": "Price ($)",
-      "submit": "Create Doctor",
-      "create_failed": "Failed to create doctor"
-    },
-    "table": {
-      "name": "Name",
-      "specialization": "Specialization",
-      "email": "Email",
-      "rate": "Rate",
-      "actions": "Actions"
-    },
-    "specializations": {
-      "OPHTHALMOLOGIST": "Ophthalmologist",
-      "DERMATOLOGIST": "Dermatologist",
-      "CARDIOLOGIST": "Cardiologist",
-      "THERAPIST": "Therapist",
-      "SURGEON": "Surgeon",
-      "DENTIST": "Dentist"
-    }
   }
 }

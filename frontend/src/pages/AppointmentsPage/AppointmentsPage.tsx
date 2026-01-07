@@ -89,6 +89,16 @@ export const AppointmentsPage = () => {
         }
     };
 
+    const handleDelete = async (id: number) => {
+        if (!window.confirm(t('appointments.actions.confirm_delete', 'Are you sure you want to delete this appointment? This action cannot be undone.'))) return;
+        try {
+            await appointmentApi.delete(id);
+            fetchAppointments();
+        } catch (err) {
+            alert(t('appointments.errors.delete_failed', 'Failed to delete appointment'));
+        }
+    };
+
     // Callback календаря при смене месяца/недели
     const onRangeChange = useCallback((range: Date[] | { start: Date; end: Date }) => {
         let start: Date, end: Date;
@@ -196,6 +206,7 @@ export const AppointmentsPage = () => {
                             onDateChange={setDate}
                             onRangeChange={onRangeChange}
                             onCancelAppointment={handleCancel}
+                            onDeleteAppointment={user?.role === 'admin' ? handleDelete : undefined}
                             userRole={user?.role}
                         />
                     </div>

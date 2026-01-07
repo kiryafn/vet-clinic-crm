@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from datetime import datetime
 
 from app.core.db import get_db, SessionDep
-from app.users.dependencies import get_current_user
+from app.users.dependencies import get_current_user, get_current_admin
 from app.users.models import User, UserRole
 from app.appointments import schemas, service
 from app.clients.service import get_client_by_user_id
@@ -145,3 +145,15 @@ async def cancel_appointment(
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
     return appointment
+
+
+@router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_appointment(
+        appointment_id: int,
+        db: SessionDep,
+        admin: User = Depends(get_current_admin),
+):
+    """Delete appointment (admin only)"""
+    success = await service.delete_appointment(db, appointment_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Appointment not found")

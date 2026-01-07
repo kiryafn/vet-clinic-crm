@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../../widgets/Header/Header';
+import { EditClientForm } from '../../widgets/EditClientForm/EditClientForm';
 import { api } from '../../shared/api/api';
 import { Card, Button, Alert } from '../../shared/ui';
+import { Modal } from '../../shared/ui/Modal/Modal';
 import type { Client } from '../../entities/client/model/types';
 
 export const ManageClientsPage = () => {
@@ -10,6 +12,7 @@ export const ManageClientsPage = () => {
     const [clients, setClients] = useState<Client[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [editingClient, setEditingClient] = useState<Client | null>(null);
 
     const fetchClients = async () => {
         setIsLoading(true);
@@ -81,7 +84,7 @@ export const ManageClientsPage = () => {
                                                     <Button
                                                         variant="ghost"
                                                         className="text-xs px-3 py-1 bg-white border border-gray-200 hover:bg-gray-50"
-                                                        onClick={() => alert(t('clients.edit_coming_soon'))}
+                                                        onClick={() => setEditingClient(client)}
                                                     >
                                                         {t('clients.edit')}
                                                     </Button>
@@ -109,6 +112,23 @@ export const ManageClientsPage = () => {
                     )}
                 </div>
             </div>
+
+            {/* Edit Client Modal */}
+            {editingClient && (
+                <Modal
+                    isOpen={!!editingClient}
+                    onClose={() => setEditingClient(null)}
+                >
+                    <EditClientForm
+                        client={editingClient}
+                        onSuccess={() => {
+                            setEditingClient(null);
+                            fetchClients();
+                        }}
+                        onCancel={() => setEditingClient(null)}
+                    />
+                </Modal>
+            )}
         </div>
     );
 };

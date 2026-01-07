@@ -2,12 +2,26 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../../widgets/Header/Header';
 import { CreateDoctorForm } from '../../widgets/CreateDoctorForm/CreateDoctorForm';
+import { EditDoctorForm } from '../../widgets/EditDoctorForm/EditDoctorForm';
 import { api } from '../../shared/api/api';
 import { Card, Button } from '../../shared/ui';
+import { Modal } from '../../shared/ui/Modal/Modal';
+
+interface Doctor {
+    id: number;
+    full_name: string;
+    specialization: string | { name: string };
+    experience_years?: number;
+    price?: number;
+    bio?: string;
+    phone_number?: string;
+    email?: string;
+}
 
 export const ManageDoctorsPage = () => {
     const { t } = useTranslation();
-    const [doctors, setDoctors] = useState<any[]>([]);
+    const [doctors, setDoctors] = useState<Doctor[]>([]);
+    const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
 
     const fetchDoctors = async () => {
         try {
@@ -76,7 +90,7 @@ export const ManageDoctorsPage = () => {
                                             <Button
                                                 variant="outline"
                                                 className="text-xs px-3 py-1"
-                                                onClick={() => alert(t('doctors.edit_coming_soon'))}
+                                                onClick={() => setEditingDoctor(doc)}
                                             >
                                                 {t('clients.edit')}
                                             </Button>
@@ -93,6 +107,34 @@ export const ManageDoctorsPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Edit Doctor Modal */}
+            {editingDoctor && (
+                <Modal
+                    isOpen={!!editingDoctor}
+                    onClose={() => setEditingDoctor(null)}
+                >
+                    <EditDoctorForm
+                        doctor={{
+                            id: editingDoctor.id,
+                            full_name: editingDoctor.full_name,
+                            specialization: typeof editingDoctor.specialization === 'string' 
+                                ? editingDoctor.specialization as any
+                                : (editingDoctor.specialization as any).name || 'THERAPIST',
+                            experience_years: editingDoctor.experience_years,
+                            price: editingDoctor.price,
+                            bio: editingDoctor.bio,
+                            phone_number: editingDoctor.phone_number,
+                            email: editingDoctor.email,
+                        }}
+                        onSuccess={() => {
+                            setEditingDoctor(null);
+                            fetchDoctors();
+                        }}
+                        onCancel={() => setEditingDoctor(null)}
+                    />
+                </Modal>
+            )}
         </div>
     );
 };
