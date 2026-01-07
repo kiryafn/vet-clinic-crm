@@ -161,46 +161,58 @@ async def get_available_slots(db: AsyncSession, doctor_id: int, date: datetime) 
     """
     Возвращает список доступных временных слотов для доктора на указанную дату.
     Рабочие часы: 9:00 - 17:00, длительность приема: 45 минут.
+    Возвращает datetime объекты с timezone UTC.
     """
     # Нормализуем дату (начало дня в UTC)
     date_utc = ensure_utc(date)
-    # Создаем начало дня в UTC (без timezone для хранения в БД)
+    # Создаем начало дня в UTC
     date_start_utc = date_utc.replace(hour=0, minute=0, second=0, microsecond=0)
-    date_start = ensure_naive_utc(date_start_utc)
-    date_end = date_start + timedelta(days=1)
+    date_end_utc = date_start_utc + timedelta(days=1)
+    
+    # Конвертируем в naive для запроса к БД (если БД хранит naive UTC)
+    date_start_naive = ensure_naive_utc(date_start_utc)
+    date_end_naive = ensure_naive_utc(date_end_utc)
     
     # Рабочие часы: 9:00 - 17:00
     WORK_START_HOUR = 9
     WORK_END_HOUR = 17
     
     # Получаем все записи доктора на этот день (кроме отмененных)
+    # Используем UTC для сравнения, так как БД может хранить timezone-aware datetime
+    date_start_utc_for_query = date_start_utc
+    date_end_utc_for_query = date_end_utc
+    
     stmt = select(Appointment).filter(
         Appointment.doctor_id == doctor_id,
         Appointment.status != "cancelled",
-        Appointment.date_time >= date_start,
-        Appointment.date_time < date_end
+        Appointment.date_time >= date_start_utc_for_query,
+        Appointment.date_time < date_end_utc_for_query
     )
     result = await db.execute(stmt)
     existing_appointments = result.scalars().all()
     
-    # Создаем множество занятых временных слотов
+    # Создаем множество занятых временных слотов (в naive UTC для сравнения)
     booked_slots = set()
     for appt in existing_appointments:
-        appt_start = ensure_naive_utc(appt.date_time)
-        booked_slots.add(appt_start)
+        # Приводим к naive UTC для сравнения
+        appt_start_naive = ensure_naive_utc(appt.date_time)
+        booked_slots.add(appt_start_naive)
     
     # Генерируем все возможные слоты в рабочие часы
     available_slots = []
-    current_time = date_start.replace(hour=WORK_START_HOUR, minute=0)
-    work_end = date_start.replace(hour=WORK_END_HOUR, minute=0)
+    # Начинаем с 9:00 UTC для указанной даты
+    current_time_naive = date_start_naive.replace(hour=WORK_START_HOUR, minute=0)
+    work_end_naive = date_start_naive.replace(hour=WORK_END_HOUR, minute=0)
     
     # Текущее время в UTC (naive для сравнения)
-    now_utc = ensure_naive_utc(datetime.now())
+    now_utc_naive = ensure_naive_utc(datetime.now(timezone.utc))
     
-    while current_time < work_end:
+    while current_time_naive < work_end_naive:
         # Проверяем, что слот не занят и не в прошлом
-        if current_time not in booked_slots and current_time > now_utc:
-            available_slots.append(current_time)
-        current_time += APPOINTMENT_DURATION
+        if current_time_naive not in booked_slots and current_time_naive > now_utc_naive:
+            # Возвращаем с timezone UTC
+            slot_utc = current_time_naive.replace(tzinfo=timezone.utc)
+            available_slots.append(slot_utc)
+        current_time_naive += APPOINTMENT_DURATION
     
     return available_slots

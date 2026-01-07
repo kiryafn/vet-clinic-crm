@@ -100,24 +100,38 @@ async def read_appointment(
 
 @router.get("/slots", response_model=List[str])
 async def get_available_slots(
+        db: SessionDep,
         doctor_id: int = Query(..., description="Doctor ID"),
         date: str = Query(..., description="Date in YYYY-MM-DD format"),
-        db: SessionDep = Depends(get_db),
 ):
     """
     Получить доступные временные слоты для доктора на указанную дату.
     Возвращает список ISO строк с доступными временами начала приема.
+    Endpoint публичный (не требует аутентификации) для удобства бронирования.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
         # Парсим дату из строки YYYY-MM-DD и добавляем UTC timezone
         from datetime import timezone
         date_obj = datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+        logger.info(f"Getting slots for doctor_id={doctor_id}, date={date}")
+    except ValueError as e:
+        logger.error(f"Invalid date format: {date}, error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Invalid date format. Use YYYY-MM-DD. Error: {str(e)}")
     
-    slots = await service.get_available_slots(db, doctor_id, date_obj)
-    # Возвращаем ISO строки в UTC формате
-    return [slot.isoformat() for slot in slots]
+    try:
+        slots = await service.get_available_slots(db, doctor_id, date_obj)
+        logger.info(f"Found {len(slots)} available slots for doctor_id={doctor_id}, date={date}")
+        # Возвращаем ISO строки в UTC формате
+        result = [slot.isoformat() for slot in slots]
+        logger.debug(f"Slots: {result}")
+        return result
+    except Exception as e:
+        # Логируем ошибку для отладки
+        logger.error(f"Error getting slots for doctor_id={doctor_id}, date={date}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error getting available slots: {str(e)}")
 
 
 @router.put("/{appointment_id}/cancel", response_model=schemas.AppointmentRead)

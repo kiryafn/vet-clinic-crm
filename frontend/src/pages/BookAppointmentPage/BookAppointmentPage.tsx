@@ -73,14 +73,18 @@ export const BookAppointmentPage = () => {
 
         const fetchSlots = async () => {
             setLoadingSlots(true);
+            setError(''); // Очищаем предыдущие ошибки
             try {
-                // Backend expects date string (ISO or YYYY-MM-DD)
+                // Backend expects date string in YYYY-MM-DD format
                 // appointmentApi.getSlots returns ISO strings of available start times
+                console.log('Fetching slots for doctor:', doctorId, 'date:', date);
                 const availableSlots = await appointmentApi.getSlots(Number(doctorId), date);
-                setSlots(availableSlots);
-            } catch (err) {
-                console.error(err);
-                setError('Failed to load available slots');
+                console.log('Received slots:', availableSlots);
+                setSlots(availableSlots || []);
+            } catch (err: any) {
+                console.error('Error fetching slots:', err);
+                const errorMessage = err?.response?.data?.detail || err?.message || 'Failed to load available slots';
+                setError(errorMessage);
             } finally {
                 setLoadingSlots(false);
             }
