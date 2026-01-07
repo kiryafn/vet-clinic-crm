@@ -4,7 +4,6 @@ from app.doctors.models import Doctor
 from app.doctors.schemas import DoctorCreate, DoctorUpdate
 from app.core.security import get_password_hash
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 
 async def create_doctor(db: AsyncSession, doctor_in: DoctorCreate) -> Doctor:
@@ -69,8 +68,6 @@ async def delete_doctor(db: AsyncSession, doctor_id: int) -> bool:
     doctor = result.scalars().first()
     if doctor:
         await db.delete(doctor)
-        # Also delete/disable user?
-        # For simplicity, keeping user but deleting doctor profile.
         await db.commit()
         return True
     return False

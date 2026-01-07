@@ -3,16 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../shared/api/api';
 import { Button, Input, Card } from '../../shared/ui';
 import { useErrorHandler } from '../../shared/utils/errorHandler';
+import {DoctorSpecialization} from "../../entities/doctor/model/types.ts";
 
-// Match backend DoctorSpecialization enum
-enum DoctorSpecialization {
-    OPHTHALMOLOGIST = "OPHTHALMOLOGIST",
-    DERMATOLOGIST = "DERMATOLOGIST",
-    CARDIOLOGIST = "CARDIOLOGIST",
-    THERAPIST = "THERAPIST",
-    SURGEON = "SURGEON",
-    DENTIST = "DENTIST"
-}
 
 export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
     const { t } = useTranslation();
@@ -37,12 +29,11 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
                 email,
                 password,
                 full_name: fullName,
-                specialization, // Send enum value string
+                specialization,
                 experience_years: parseInt(experience),
                 bio
             });
             onSuccess();
-            // Reset form
             setFullName('');
             setEmail('');
             setPassword('');

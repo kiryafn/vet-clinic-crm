@@ -9,7 +9,6 @@ export const sessionApi = {
         formData.append('username', params.email);
         formData.append('password', params.password);
 
-        // OAuth2PasswordRequestForm expects form-data
         const response = await api.post<AuthResponse>('/users/login', formData, {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });

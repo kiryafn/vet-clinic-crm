@@ -7,8 +7,6 @@ from app.clients.schemas import ClientRead
 from app.pets.schemas import PetRead
 from app.doctors.schemas import DoctorRead
 
-
-
 class AppointmentCreate(BaseModel):
     doctor_id: int = Field(..., gt=0, description="Doctor ID must be positive")
     pet_id: int = Field(..., gt=0, description="Pet ID must be positive")
@@ -18,14 +16,11 @@ class AppointmentCreate(BaseModel):
     @field_validator('date_time')
     @classmethod
     def validate_date_time(cls, v: datetime) -> datetime:
-        # Получаем текущее время в UTC (aware datetime)
         now = datetime.now(timezone.utc)
         
-        # Если входящий datetime naive (без timezone), считаем его UTC
         if v.tzinfo is None:
             v = v.replace(tzinfo=timezone.utc)
         else:
-            # Если aware, конвертируем в UTC для сравнения
             v = v.astimezone(timezone.utc)
         
         if v <= now:

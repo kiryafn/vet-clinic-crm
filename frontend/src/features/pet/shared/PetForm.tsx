@@ -31,7 +31,6 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
     const [age, setAge] = useState(initialValues?.age || '');
     const [weight, setWeight] = useState(initialValues?.weight || '');
 
-    // Validation errors
     const [errors, setErrors] = useState<{
         name?: string;
         breed?: string;
@@ -39,7 +38,6 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
         weight?: string;
     }>({});
 
-    // Reset when initialValues change
     useEffect(() => {
         if (initialValues) {
             setName(initialValues.name);
@@ -58,7 +56,6 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
     const validate = (): boolean => {
         const newErrors: typeof errors = {};
 
-        // Name validation
         const trimmedName = name.trim();
         if (!trimmedName) {
             newErrors.name = t('pet.validation.name_required', 'Name is required');
@@ -68,16 +65,13 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
             newErrors.name = t('pet.validation.name_max', 'Name cannot exceed 50 characters');
         }
 
-        // Breed validation
         if (breed && breed.trim().length > 50) {
             newErrors.breed = t('pet.validation.breed_max', 'Breed cannot exceed 50 characters');
         }
 
-        // Birth date validation
         if (!age) {
             newErrors.age = t('pet.validation.birth_date_required', 'Birth date is required');
         } else {
-            // Проверка формата YYYY-MM
             const dateRegex = /^\d{4}-\d{2}$/;
             if (!dateRegex.test(age)) {
                 newErrors.age = t('pet.validation.invalid_date_format', 'Invalid date format. Please use YYYY-MM format.');
@@ -86,15 +80,12 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
                 const year = parseInt(parts[0]);
                 const month = parseInt(parts[1]);
                 
-                // Проверка месяца
                 if (month < 1 || month > 12) {
                     newErrors.age = t('pet.validation.invalid_month', 'Invalid month. Month must be between 1 and 12.');
                 } else {
-                    // Проверка: год не должен быть меньше 1970
                     if (year < 1970) {
                         newErrors.age = t('pet.validation.birth_year_min', 'Birth year cannot be earlier than 1970');
                     } else {
-                        // Проверка на будущую дату
                         try {
                             const selectedDate = new Date(age + '-01');
                             if (isNaN(selectedDate.getTime())) {
@@ -115,7 +106,6 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
             }
         }
 
-        // Weight validation
         if (weight) {
             const weightNum = parseFloat(weight);
             if (isNaN(weightNum) || weightNum < 0) {

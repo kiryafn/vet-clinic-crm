@@ -3,16 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../shared/api/api';
 import { Button, Input, Card } from '../../shared/ui';
 import { useErrorHandler } from '../../shared/utils/errorHandler';
+import { DoctorSpecialization } from '../../entities/doctor/model/types';
 
-// Match backend DoctorSpecialization enum
-enum DoctorSpecialization {
-    OPHTHALMOLOGIST = "OPHTHALMOLOGIST",
-    DERMATOLOGIST = "DERMATOLOGIST",
-    CARDIOLOGIST = "CARDIOLOGIST",
-    THERAPIST = "THERAPIST",
-    SURGEON = "SURGEON",
-    DENTIST = "DENTIST"
-}
 
 interface Doctor {
     id: number;

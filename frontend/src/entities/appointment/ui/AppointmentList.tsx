@@ -31,7 +31,6 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
         );
     }
 
-    // Заменили объект на switch case - это надежнее и понятнее
     const getStatusBadge = (status: AppointmentStatus) => {
         switch (status) {
             case AppointmentStatus.PLANNED:
@@ -45,7 +44,6 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
         }
     };
 
-    // Нативные функции форматирования без библиотек
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString(i18n.language, {
             day: 'numeric',
@@ -90,7 +88,6 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
                     <tbody className="divide-y divide-gray-50">
                         {appointments.map((apt) => (
                             <tr key={apt.id} className="group hover:bg-gray-50/50 transition-all duration-200">
-                                {/* Дата и Время */}
                                 <td className="px-8 py-5">
                                     <div className="font-bold text-gray-900 capitalize">
                                         {formatDate(apt.date_time)}
@@ -100,7 +97,6 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
                                     </div>
                                 </td>
 
-                                {/* Клієнт */}
                                 <td className="px-6 py-5">
                                     <div className="font-medium text-gray-900">
                                         {apt.client?.full_name || t('common.unknown')}
@@ -110,7 +106,6 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
                                     </div>
                                 </td>
 
-                                {/* Тварина */}
                                 <td className="px-6 py-5">
                                     <div className="font-medium text-gray-900">{apt.pet.name}</div>
                                     <div className="text-xs text-gray-500 capitalize">
@@ -118,7 +113,6 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
                                     </div>
                                 </td>
 
-                                {/* Лікар */}
                                 <td className="px-6 py-5">
                                     <div className="font-medium text-gray-900">{apt.doctor.full_name}</div>
                                     {apt.doctor.specialization && (
@@ -128,14 +122,12 @@ export const AppointmentList = ({ appointments, isLoading }: AppointmentListProp
                                     )}
                                 </td>
 
-                                {/* Статус */}
                                 <td className="px-6 py-5">
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ${getStatusBadge(apt.status)}`}>
                                         {t(`appointments.status.${apt.status}`)}
                                     </span>
                                 </td>
 
-                                {/* Причина */}
                                 <td className="px-8 py-5 text-right text-sm text-gray-600">
                                     {apt.reason || '-'}
                                 </td>

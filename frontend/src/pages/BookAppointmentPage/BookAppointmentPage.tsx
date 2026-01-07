@@ -25,27 +25,22 @@ export const BookAppointmentPage = () => {
     const navigate = useNavigate();
     const { extractError } = useErrorHandler();
 
-    // Data state
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [pets, setPets] = useState<Pet[]>([]);
     const [isFetchingData, setIsFetchingData] = useState(true);
 
-    // Form state
     const [doctorId, setDoctorId] = useState('');
     const [petId, setPetId] = useState('');
     const [date, setDate] = useState('');
     const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
     const [description, setDescription] = useState('');
 
-    // Slots state
     const [slots, setSlots] = useState<string[]>([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
 
-    // UI state
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // Validation errors
     const [validationErrors, setValidationErrors] = useState<{
         doctorId?: string;
         petId?: string;
@@ -59,10 +54,9 @@ export const BookAppointmentPage = () => {
             try {
                 const [doctorsRes, petsRes] = await Promise.all([
                     api.get('/doctors/'),
-                    api.get('/pets/', { params: { page: 1, limit: 100 } }) // Загружаем все питомцы
+                    api.get('/pets/', { params: { page: 1, limit: 100 } })
                 ]);
                 setDoctors(doctorsRes.data);
-                // Обрабатываем пагинированный ответ
                 const petsData = petsRes.data?.items || petsRes.data || [];
                 setPets(Array.isArray(petsData) ? petsData : []);
             } catch (err: any) {
@@ -148,6 +142,10 @@ export const BookAppointmentPage = () => {
         e.preventDefault();
         if (!validate()) return;
 
+        // ADD THIS LINE:
+        // Explicitly check if selectedSlot is null to satisfy TypeScript
+        if (!selectedSlot) return;
+
         setIsSubmitting(true);
         setError('');
 
@@ -155,7 +153,7 @@ export const BookAppointmentPage = () => {
             await appointmentApi.create({
                 doctor_id: Number(doctorId),
                 pet_id: Number(petId),
-                date_time: selectedSlot, // Slot is already an ISO string from backend
+                date_time: selectedSlot, // TypeScript now knows this is definitely a string
                 reason: description.trim() || undefined
             });
             navigate('/appointments');

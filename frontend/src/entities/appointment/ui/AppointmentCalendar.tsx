@@ -3,7 +3,6 @@ import { Calendar, dateFnsLocalizer, Views, type View, type Event, type SlotInfo
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS, uk } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import type { Appointment } from '../model/types';
 import { AppointmentStatus } from '../model/types';
@@ -66,17 +65,14 @@ const CustomEvent = ({ event, onCancel, onComplete, onDelete, onSelect, userRole
         }
     };
 
-    // Эмодзи для статусов
     const statusEmoji = isCompleted ? '✅' : isCancelled ? '❌' : '📅';
 
-    // Стили для событий в зависимости от статуса
-    const eventBgColor = isCancelled 
+    const eventBgColor = isCancelled
         ? 'bg-red-500 border-l-4 border-red-700 opacity-70' 
         : isCompleted 
         ? 'bg-emerald-500 border-l-4 border-emerald-700' 
         : 'bg-indigo-600 border-l-4 border-indigo-800';
 
-    // Для agenda view используем черный текст
     if (isAgendaView) {
         return (
             <div onClick={handleClick} className="w-full cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
@@ -107,7 +103,6 @@ const CustomEvent = ({ event, onCancel, onComplete, onDelete, onSelect, userRole
         );
     }
 
-    // Для Month view показываем только самое необходимое - очень компактно
     if (isMonthView) {
         return (
             <div
@@ -124,7 +119,6 @@ const CustomEvent = ({ event, onCancel, onComplete, onDelete, onSelect, userRole
         );
     }
 
-    // Для Week/Day view показываем больше информации, но аккуратно
     return (
         <div
             onClick={handleClick}
@@ -192,16 +186,13 @@ export const AppointmentCalendar = ({
     const events: CalendarEvent[] = useMemo(() => {
         const isDoctor = userRole === UserRole.DOCTOR;
         return appointments.map(apt => {
-            // Для заголовка используем только имя питомца (для клиента) или имя клиента (для доктора)
-            // Полная информация будет в CustomEvent компоненте
+
             let title = '';
             if (isDoctor) {
-                // Для доктора - имя клиента и питомца коротко
                 const petName = apt.pet?.name || t('appointments.fallbacks.pet');
                 const clientName = apt.client?.full_name || t('appointments.fallbacks.client');
                 title = `${clientName}: ${petName}`;
             } else {
-                // Для клиента - только имя питомца
                 title = apt.pet?.name || t('appointments.fallbacks.pet');
             }
             return {
@@ -214,8 +205,7 @@ export const AppointmentCalendar = ({
         });
     }, [appointments, userRole]);
 
-    const eventPropGetter = useCallback((event: CalendarEvent) => {
-        // Стили применяются в CustomEvent через Tailwind
+    const eventPropGetter = useCallback(() => {
         return {
             className: '',
         };
@@ -403,7 +393,6 @@ export const AppointmentCalendar = ({
                 }}
             />
 
-            {/* Modal with appointment details */}
             {selectedAppointment && (
                 <AppointmentDetailModal
                     appointment={selectedAppointment}
@@ -420,7 +409,6 @@ export const AppointmentCalendar = ({
     );
 };
 
-// Modal component for appointment details
 interface AppointmentDetailModalProps {
     appointment: Appointment;
     onClose: () => void;
@@ -550,7 +538,6 @@ const AppointmentDetailModal = ({
                     </div>
                 )}
 
-                {/* Doctor */}
                 {!isDoctor && apt.doctor && (
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -567,7 +554,6 @@ const AppointmentDetailModal = ({
                     </div>
                 )}
 
-                {/* Reason */}
                 {apt.reason && (
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -577,7 +563,6 @@ const AppointmentDetailModal = ({
                     </div>
                 )}
 
-                {/* Doctor Notes */}
                 {apt.doctor_notes && (
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -589,7 +574,6 @@ const AppointmentDetailModal = ({
                     </div>
                 )}
 
-                {/* Actions */}
                 <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
                     {isDoctor && onComplete && !isCancelled && !isCompleted && (
                         <Button

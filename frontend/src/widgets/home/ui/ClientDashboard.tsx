@@ -30,7 +30,6 @@ export const ClientDashboard = () => {
                 colorTheme="pink"
             />
 
-            {/* Карточка-заглушка */}
             <DashboardActionCard
                 title={t('home.cards.my_appointments')}
                 description={t('home.cards.my_appointments_desc')}

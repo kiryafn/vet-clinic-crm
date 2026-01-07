@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { Pet } from '../../model/types';
 import { PetRow } from '../PetRow/PetRow';
-import { Button } from '../../../../shared/ui'; // Проверь путь к Button
+import { Button } from '../../../../shared/ui';
 
 interface PetListProps {
     pets: Pet[];
@@ -9,7 +9,6 @@ interface PetListProps {
     onDelete: (id: number) => void;
     onUpdate: (id: number) => void;
 
-    // Новые пропсы для пагинации
     page: number;
     total: number;
     limit: number;
@@ -37,7 +36,6 @@ export const PetList = ({
         );
     }
 
-    // Показываем "Нет животных" только если это первая страница и список пуст
     if (pets.length === 0 && page === 1) {
         return (
             <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
@@ -78,7 +76,6 @@ export const PetList = ({
                 </div>
             </div>
 
-            {/* Контролы пагинации */}
             {total > 0 && (
                 <div className="flex justify-center items-center gap-4">
                     <Button

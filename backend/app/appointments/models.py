@@ -22,7 +22,7 @@ class Appointment(Base, TimestampMixin):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     date_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    duration_minutes: Mapped[int] = mapped_column(default=45)  # Default 45-minute appointments
+    duration_minutes: Mapped[int] = mapped_column(default=45)
     status: Mapped[AppointmentStatus] = mapped_column(Enum(AppointmentStatus), default=AppointmentStatus.PLANNED)
     reason: Mapped[str] = mapped_column(Text)
     doctor_notes: Mapped[str | None] = mapped_column(Text, nullable=True)

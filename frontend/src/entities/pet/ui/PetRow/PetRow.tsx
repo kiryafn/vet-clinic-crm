@@ -10,7 +10,6 @@ interface PetRowProps {
 export const PetRow = ({ pet, onDelete, onUpdate }: PetRowProps) => {
     const { t } = useTranslation();
 
-    // Determine icon based on species
     const getSpeciesIcon = (species: string) => {
         const s = species.toLowerCase();
         if (s === 'dog') return '🐶';

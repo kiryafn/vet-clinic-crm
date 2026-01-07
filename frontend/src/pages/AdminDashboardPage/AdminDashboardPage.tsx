@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../../widgets/Header/Header';
-import { Card, Button } from '../../shared/ui';
+import {Button } from '../../shared/ui';
 
 export const AdminDashboardPage = () => {
     const navigate = useNavigate();

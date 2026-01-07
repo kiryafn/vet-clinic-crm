@@ -10,7 +10,6 @@ import { appointmentApi } from '../../entities/appointment/api/appointmentApi';
 import { AppointmentList } from '../../entities/appointment/ui/AppointmentList';
 import { AppointmentCalendar } from '../../entities/appointment/ui/AppointmentCalendar';
 import { useAuth } from '../../entities/session/model/store';
-import { UserRole } from '../../entities/user/model/types';
 import type { Appointment } from '../../entities/appointment/model/types';
 
 export const AppointmentsPage = () => {
@@ -18,7 +17,6 @@ export const AppointmentsPage = () => {
     const { t } = useTranslation();
     const { user } = useAuth();
 
-    // --- STATE ---
     const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
     const [calendarView, setCalendarView] = useState<View>(Views.MONTH);
     const [date, setDate] = useState(new Date()); // Текущая дата календаря
@@ -27,18 +25,15 @@ export const AppointmentsPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // Pagination State for List View
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
     const limit = 10;
 
-    // Date Range State for Calendar View
     const [dateRange, setDateRange] = useState<{ start: Date; end: Date }>({
         start: startOfMonth(new Date()),
         end: endOfMonth(new Date())
     });
 
-    // --- FETCH DATA ---
     const fetchAppointments = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -52,7 +47,6 @@ export const AppointmentsPage = () => {
                     end_date: dateRange.end.toISOString()
                 };
             } else {
-                // В режиме списка грузим пагинацию
                 params = {
                     page: page,
                     limit: limit
@@ -60,8 +54,7 @@ export const AppointmentsPage = () => {
             }
 
             const data = await appointmentApi.getAll(params);
-            // Фильтруем отмененные записи для календаря
-            const filteredItems = viewMode === 'calendar' 
+            const filteredItems = viewMode === 'calendar'
                 ? data.items.filter((apt: Appointment) => apt.status !== 'cancelled')
                 : data.items;
             setAppointments(filteredItems);
@@ -106,7 +99,6 @@ export const AppointmentsPage = () => {
             // Если View = Day | Week (приходит массив дней)
             start = range[0];
             end = range[range.length - 1];
-            // Добавляем конец дня
             end.setHours(23, 59, 59);
         } else {
             // Если View = Month

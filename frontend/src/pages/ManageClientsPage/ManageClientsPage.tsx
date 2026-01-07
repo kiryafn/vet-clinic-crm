@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Header } from '../../widgets/Header/Header';
 import { EditClientForm } from '../../widgets/EditClientForm/EditClientForm';
 import { api } from '../../shared/api/api';
-import { Card, Button, Alert } from '../../shared/ui';
+import { Button, Alert } from '../../shared/ui';
 import { Modal } from '../../shared/ui/Modal/Modal';
 import type { Client } from '../../entities/client/model/types';
 

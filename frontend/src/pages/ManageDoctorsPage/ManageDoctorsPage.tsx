@@ -108,7 +108,6 @@ export const ManageDoctorsPage = () => {
                 </div>
             </div>
 
-            {/* Edit Doctor Modal */}
             {editingDoctor && (
                 <Modal
                     isOpen={!!editingDoctor}

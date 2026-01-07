@@ -5,11 +5,6 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 
-# Use aiosqlite for async sqlite
-# Update DATABASE_URL in config or here to start with sqlite+aiosqlite://
-# Assuming settings.DATABASE_URL is something like "sqlite:///./sql_app.db"
-# We need to transform it or ensure it's correct. 
-# For safety, let's patch it purely for async here if it's standard sqlite.
 db_url = settings.DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://")
 
 engine = create_async_engine(

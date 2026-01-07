@@ -3,7 +3,6 @@ from sqlalchemy import String, ForeignKey, Date, Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.models import TimestampMixin
 from typing import TYPE_CHECKING
-from app.users.models import User
 from app.core.db import Base
 from datetime import date
 if TYPE_CHECKING:

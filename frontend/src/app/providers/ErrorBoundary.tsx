@@ -23,7 +23,6 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: any, errorInfo: any) {
     console.error("Uncaught error:", error, errorInfo);
     this.setState({ errorInfo });
-    // Здесь можно отправить ошибку в Sentry или другой логгер
   }
 
   handleReset = () => {
@@ -61,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </pre>
               </div>
 
-              {process.env.NODE_ENV === 'development' && errorStack && (
+              {import.meta.env.DEV && errorStack && (
                 <details className="mb-4">
                   <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900 font-medium mb-2">
                     Stack Trace (Development Only)

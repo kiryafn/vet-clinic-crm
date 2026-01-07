@@ -14,7 +14,6 @@ export const AdminDoctorsPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        {/* ПЕРЕДАЕМ ФУНКЦИЮ СЮДА */}
                         <CreateDoctorForm onSuccess={handleDoctorCreated} />
                     </div>
                     <div className="p-4 bg-white rounded shadow text-gray-500">

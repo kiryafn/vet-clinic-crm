@@ -1,4 +1,3 @@
-/* Custom styles for react-big-calendar */
 .appointment-calendar-wrapper {
     height: 100%;
     width: 100%;
@@ -11,7 +10,6 @@
     overflow: hidden;
 }
 
-/* Header styling */
 .appointment-calendar-wrapper .rbc-header {
     padding: 1rem;
     font-weight: 600;
@@ -27,7 +25,6 @@
     background-color: #f0f9ff;
 }
 
-/* Toolbar styling */
 .appointment-calendar-wrapper .rbc-toolbar {
     padding: 1.5rem;
     background: white;
@@ -65,7 +62,6 @@
     text-transform: capitalize;
 }
 
-/* Month view */
 .appointment-calendar-wrapper .rbc-month-view {
     border: none;
 }
@@ -98,7 +94,6 @@
     background: #f9fafb;
 }
 
-/* Week/Day view */
 .appointment-calendar-wrapper .rbc-time-view {
     border: none;
 }
@@ -140,7 +135,6 @@
     opacity: 0.6;
 }
 
-/* Event styling */
 .appointment-calendar-wrapper .rbc-event {
     border: none;
     border-radius: 0.5rem;
@@ -176,7 +170,6 @@
     opacity: 0.9;
 }
 
-/* Custom event component */
 .appointment-event {
     height: 100%;
     display: flex;
@@ -260,7 +253,6 @@
     transform: scale(0.95);
 }
 
-/* Agenda view */
 .appointment-calendar-wrapper .rbc-agenda-view {
     border: none;
 }
@@ -288,17 +280,14 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
-/* Selected slot styling */
 .appointment-calendar-wrapper .rbc-selected {
     background-color: rgba(99, 102, 241, 0.1);
 }
 
-/* Today indicator */
 .appointment-calendar-wrapper .rbc-now {
     font-weight: 700;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .appointment-calendar-wrapper .rbc-toolbar {
         flex-direction: column;

@@ -1,22 +1,19 @@
 import { api } from '../../../shared/api/api';
 import type { Appointment, AppointmentCreate } from '../model/types';
 
-// Интерфейс ответа с пагинацией
 export interface PaginatedResponse<T> {
     items: T[];
     total: number;
 }
 
-// Параметры запроса
 export interface GetAppointmentsParams {
     page?: number;
     limit?: number;
-    start_date?: string; // ISO string
-    end_date?: string;   // ISO string
+    start_date?: string;
+    end_date?: string;
 }
 
 export const appointmentApi = {
-    // Обновили метод getAll
     getAll: async (params: GetAppointmentsParams = {}) => {
         const response = await api.get<PaginatedResponse<Appointment>>('/appointments/', { params });
         return response.data;

@@ -14,10 +14,8 @@ export const useRegister = () => {
         setError(null);
 
         try {
-            // 2. Вызываем метод из sessionApi
             await sessionApi.register(data);
 
-            // Успех -> редирект
             navigate('/login');
         } catch (err: any) {
             console.error("Registration error:", err);

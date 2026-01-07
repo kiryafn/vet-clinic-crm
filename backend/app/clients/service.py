@@ -8,16 +8,14 @@ from app.core.security import get_password_hash
 
 
 async def create_client(db: AsyncSession, client_in: ClientCreate) -> Client:
-    # 1. Создаем User (Auth)
     db_user = User(
         email=str(client_in.email),
         password_hash=get_password_hash(client_in.password),
         role=UserRole.CLIENT
     )
     db.add(db_user)
-    await db.flush() # Получаем ID
+    await db.flush()
 
-    # 2. Создаем Client (Profile)
     db_client = Client(
         user_id=db_user.id,
         full_name=client_in.full_name,

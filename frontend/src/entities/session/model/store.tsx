@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     if (loading) {
-        return <div>Loading app...</div>; // Simple loading state for now
+        return <div>Loading app...</div>;
     }
 
     return (
