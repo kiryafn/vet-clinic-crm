@@ -22,5 +22,10 @@ export const appointmentApi = {
             params: { doctor_id: doctorId, date }
         });
         return response.data;
+    },
+
+    cancel: async (id: number) => {
+        const response = await api.put<Appointment>(`/appointments/${id}/cancel`);
+        return response.data;
     }
 };

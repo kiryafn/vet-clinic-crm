@@ -146,3 +146,14 @@ async def get_appointments(db: AsyncSession, skip: int = 0, limit: int = 100, fi
 async def get_appointment(db: AsyncSession, appointment_id: int):
     result = await db.execute(select(Appointment).filter(Appointment.id == appointment_id))
     return result.scalars().first()
+
+
+async def cancel_appointment(db: AsyncSession, appointment_id: int):
+    appointment = await get_appointment(db, appointment_id)
+    if not appointment:
+        return None
+    
+    appointment.cancel()
+    await db.commit()
+    await db.refresh(appointment)
+    return appointment
