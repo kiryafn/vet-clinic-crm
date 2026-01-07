@@ -26,7 +26,6 @@ class AppointmentRead(BaseModel):
     doctor_notes : str | None
     reason: str | None = None
 
-
     client: ClientRead
     doctor: DoctorRead
     pet: PetRead

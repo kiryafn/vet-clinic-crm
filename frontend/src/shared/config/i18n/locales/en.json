@@ -141,5 +141,72 @@
       "exotic": "Exotic",
       "other": "Other"
     }
+  },
+  "appointments": {
+    "page_title": "Appointments",
+    "page_subtitle": "Manage your schedule and visits",
+    "actions": {
+      "calendar_view": "Calendar",
+      "list_view": "List View",
+      "book": "Book Appointment",
+      "cancel": "Cancel",
+      "confirm_cancel": "Are you sure you want to cancel this appointment?"
+    },
+    "list": {
+      "headers": {
+        "date_time": "Date & Time",
+        "client": "Client",
+        "pet": "Pet",
+        "doctor": "Doctor",
+        "status": "Status",
+        "reason": "Reason"
+      },
+      "empty_title": "No appointments yet",
+      "empty_desc": "Book your first visit to see it here!"
+    },
+    "status": {
+      "PLANNED": "Planned",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "errors": {
+      "load_failed": "Failed to load appointments",
+      "cancel_failed": "Failed to cancel appointment"
+    }
+  },
+  "doctors": {
+    "manage_title": "Manage Doctors",
+    "manage_subtitle": "Register new staff and view existing doctors",
+    "add_new": "Register New Doctor",
+    "list_empty": "No doctors found",
+    "form": {
+      "title": "Register New Doctor",
+      "full_name": "Full Name",
+      "email": "Email",
+      "password": "Password",
+      "specialization": "Specialization",
+      "bio": "Biography / Description",
+      "hourly_rate": "Hourly Rate ($)",
+      "submit": "Register Doctor",
+      "placeholders": {
+        "specialization": "e.g. Surgeon",
+        "bio": "Brief description of experience..."
+      }
+    },
+    "table": {
+      "name": "Name",
+      "specialization": "Specialization",
+      "email": "Email",
+      "rate": "Rate",
+      "actions": "Actions"
+    }
+  },
+  "admin": {
+    "back_dashboard": "Back to Dashboard"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success"
   }
 }

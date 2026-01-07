@@ -1,22 +1,23 @@
-export enum AppointmentStatus {
-    PLANNED = 'planned',
-    COMPLETED = 'completed',
-    CANCELLED = 'cancelled'
+export const AppointmentStatus = {
+    PLANNED: 'planned',
+    COMPLETED: 'completed',
+    CANCELLED: 'cancelled'
 }
+
+export type AppointmentStatus = typeof AppointmentStatus[keyof typeof AppointmentStatus];
 
 export interface Appointment {
     id: number;
     date_time: string;
     duration_minutes: number;
     status: AppointmentStatus;
-    reason: string;
     doctor_notes?: string;
-    user_description?: string;
+    reason?: string;
 
     doctor: {
         id: number;
         full_name: string;
-        specialization?: string | { name: string }; // Handle potential backend variations
+        specialization?: string;
         price: number;
     };
     pet: {
@@ -24,7 +25,7 @@ export interface Appointment {
         name: string;
         species: string;
     };
-    client?: { // Might be missing if viewed by client? No, always loaded.
+    client?: {
         id: number;
         full_name: string;
         phone_number?: string;
@@ -34,6 +35,6 @@ export interface Appointment {
 export interface AppointmentCreate {
     doctor_id: number;
     pet_id: number;
-    date_time: string; // ISO
-    user_description?: string;
+    date_time: string;
+    reason?: string;
 }
