@@ -53,14 +53,18 @@ async def read_appointments(
     
     return await service.get_appointments(db, skip=skip, limit=limit, filters=filter_by)
 
+from datetime import datetime, date as date_type
+
 @router.get("/slots", response_model=List[datetime])
 async def get_available_slots(
     doctor_id: int,
-    date: datetime,
+    date: date_type,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await service.get_day_slots(db, doctor_id, date)
+    # Convert date to datetime at midnight
+    dt = datetime.combine(date, datetime.min.time())
+    return await service.get_day_slots(db, doctor_id, dt)
 
 @router.get("/{appointment_id}", response_model=schemas.AppointmentRead)
 async def read_appointment(
