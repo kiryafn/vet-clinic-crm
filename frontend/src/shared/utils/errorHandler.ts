@@ -41,14 +41,34 @@ export const extractErrorMessage = (
                     // Форматируем сообщение
                     let message = err.msg;
                     
-                    // Если есть тип ошибки, добавляем его
-                    if (err.type) {
+                    // Специальная обработка ошибок валидации даты
+                    if (message.includes('month value is outside expected range')) {
+                        message = t 
+                            ? t('pet.validation.invalid_month', 'Invalid month. Month must be between 1 and 12.')
+                            : 'Invalid month. Month must be between 1 and 12.';
+                    } else if (message.includes('day value is outside expected range')) {
+                        message = t 
+                            ? t('pet.validation.invalid_day', 'Invalid day. Please check the date.')
+                            : 'Invalid day. Please check the date.';
+                    } else if (message.includes('year value is outside expected range') || message.includes('date')) {
+                        message = t 
+                            ? t('pet.validation.invalid_date_format', 'Invalid date format. Please use YYYY-MM format.')
+                            : 'Invalid date format. Please use YYYY-MM format.';
+                    }
+                    
+                    // Если есть тип ошибки, добавляем его (но не для специально обработанных ошибок)
+                    if (err.type && !message.includes('Invalid')) {
                         message = `${message} (${err.type})`;
                     }
                     
                     // Если есть локация, добавляем её красиво
-                    if (location) {
-                        return `${location}: ${message}`;
+                    // Для birth_date показываем "Date of Birth" вместо "birth_date"
+                    const friendlyLocation = location === 'birth_date' 
+                        ? (t ? t('pet.form.birth_date', 'Date of Birth') : 'Date of Birth')
+                        : location;
+                    
+                    if (friendlyLocation) {
+                        return `${friendlyLocation}: ${message}`;
                     }
                     
                     return message;

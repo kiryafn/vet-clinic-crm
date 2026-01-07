@@ -77,19 +77,41 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
         if (!age) {
             newErrors.age = t('pet.validation.birth_date_required', 'Birth date is required');
         } else {
-            const selectedDate = new Date(age + '-01');
-            const today = new Date();
-            today.setHours(23, 59, 59, 999);
-            
-            // Проверка на будущую дату
-            if (selectedDate > today) {
-                newErrors.age = t('pet.validation.birth_date_future', 'Birth date cannot be in the future');
-            }
-            
-            // Проверка: год не должен быть меньше 1970
-            const year = parseInt(age.split('-')[0]);
-            if (year < 1970) {
-                newErrors.age = t('pet.validation.birth_year_min', 'Birth year cannot be earlier than 1970');
+            // Проверка формата YYYY-MM
+            const dateRegex = /^\d{4}-\d{2}$/;
+            if (!dateRegex.test(age)) {
+                newErrors.age = t('pet.validation.invalid_date_format', 'Invalid date format. Please use YYYY-MM format.');
+            } else {
+                const parts = age.split('-');
+                const year = parseInt(parts[0]);
+                const month = parseInt(parts[1]);
+                
+                // Проверка месяца
+                if (month < 1 || month > 12) {
+                    newErrors.age = t('pet.validation.invalid_month', 'Invalid month. Month must be between 1 and 12.');
+                } else {
+                    // Проверка: год не должен быть меньше 1970
+                    if (year < 1970) {
+                        newErrors.age = t('pet.validation.birth_year_min', 'Birth year cannot be earlier than 1970');
+                    } else {
+                        // Проверка на будущую дату
+                        try {
+                            const selectedDate = new Date(age + '-01');
+                            if (isNaN(selectedDate.getTime())) {
+                                newErrors.age = t('pet.validation.invalid_date_format', 'Invalid date format. Please use YYYY-MM format.');
+                            } else {
+                                const today = new Date();
+                                today.setHours(23, 59, 59, 999);
+                                
+                                if (selectedDate > today) {
+                                    newErrors.age = t('pet.validation.birth_date_future', 'Birth date cannot be in the future');
+                                }
+                            }
+                        } catch (e) {
+                            newErrors.age = t('pet.validation.invalid_date_format', 'Invalid date format. Please use YYYY-MM format.');
+                        }
+                    }
+                }
             }
         }
 
