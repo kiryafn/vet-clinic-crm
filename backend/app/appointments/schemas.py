@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from datetime import datetime
+from datetime import datetime, timezone
 from app.appointments.models import AppointmentStatus
 
 from app.users.schemas import UserResponse
@@ -18,7 +18,16 @@ class AppointmentCreate(BaseModel):
     @field_validator('date_time')
     @classmethod
     def validate_date_time(cls, v: datetime) -> datetime:
-        now = datetime.utcnow()
+        # Получаем текущее время в UTC (aware datetime)
+        now = datetime.now(timezone.utc)
+        
+        # Если входящий datetime naive (без timezone), считаем его UTC
+        if v.tzinfo is None:
+            v = v.replace(tzinfo=timezone.utc)
+        else:
+            # Если aware, конвертируем в UTC для сравнения
+            v = v.astimezone(timezone.utc)
+        
         if v <= now:
             raise ValueError('Appointment date and time must be in the future')
         return v
