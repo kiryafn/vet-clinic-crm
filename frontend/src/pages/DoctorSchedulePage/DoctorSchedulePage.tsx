@@ -52,7 +52,11 @@ export const DoctorSchedulePage = () => {
             }
 
             const data = await appointmentApi.getAll(params);
-            setAppointments(data.items);
+            // Фильтруем отмененные записи для календаря
+            const filteredItems = viewMode === 'calendar' 
+                ? data.items.filter(apt => apt.status !== 'cancelled')
+                : data.items;
+            setAppointments(filteredItems);
             setTotal(data.total);
         } catch (error) {
             console.error('Failed to fetch appointments', error);

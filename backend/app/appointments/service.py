@@ -155,3 +155,52 @@ async def cancel_appointment(db: AsyncSession, appointment_id: int):
     await db.commit()
     # Возвращаем объект (он уже с подгруженными связями из get_appointment)
     return appointment
+
+
+async def get_available_slots(db: AsyncSession, doctor_id: int, date: datetime) -> list[datetime]:
+    """
+    Возвращает список доступных временных слотов для доктора на указанную дату.
+    Рабочие часы: 9:00 - 17:00, длительность приема: 45 минут.
+    """
+    # Нормализуем дату (начало дня в UTC)
+    date_utc = ensure_utc(date)
+    # Создаем начало дня в UTC (без timezone для хранения в БД)
+    date_start_utc = date_utc.replace(hour=0, minute=0, second=0, microsecond=0)
+    date_start = ensure_naive_utc(date_start_utc)
+    date_end = date_start + timedelta(days=1)
+    
+    # Рабочие часы: 9:00 - 17:00
+    WORK_START_HOUR = 9
+    WORK_END_HOUR = 17
+    
+    # Получаем все записи доктора на этот день (кроме отмененных)
+    stmt = select(Appointment).filter(
+        Appointment.doctor_id == doctor_id,
+        Appointment.status != "cancelled",
+        Appointment.date_time >= date_start,
+        Appointment.date_time < date_end
+    )
+    result = await db.execute(stmt)
+    existing_appointments = result.scalars().all()
+    
+    # Создаем множество занятых временных слотов
+    booked_slots = set()
+    for appt in existing_appointments:
+        appt_start = ensure_naive_utc(appt.date_time)
+        booked_slots.add(appt_start)
+    
+    # Генерируем все возможные слоты в рабочие часы
+    available_slots = []
+    current_time = date_start.replace(hour=WORK_START_HOUR, minute=0)
+    work_end = date_start.replace(hour=WORK_END_HOUR, minute=0)
+    
+    # Текущее время в UTC (naive для сравнения)
+    now_utc = ensure_naive_utc(datetime.now())
+    
+    while current_time < work_end:
+        # Проверяем, что слот не занят и не в прошлом
+        if current_time not in booked_slots and current_time > now_utc:
+            available_slots.append(current_time)
+        current_time += APPOINTMENT_DURATION
+    
+    return available_slots

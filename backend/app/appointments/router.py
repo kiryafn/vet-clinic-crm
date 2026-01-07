@@ -98,6 +98,28 @@ async def read_appointment(
     return appointment
 
 
+@router.get("/slots", response_model=List[str])
+async def get_available_slots(
+        doctor_id: int = Query(..., description="Doctor ID"),
+        date: str = Query(..., description="Date in YYYY-MM-DD format"),
+        db: SessionDep = Depends(get_db),
+):
+    """
+    Получить доступные временные слоты для доктора на указанную дату.
+    Возвращает список ISO строк с доступными временами начала приема.
+    """
+    try:
+        # Парсим дату из строки YYYY-MM-DD и добавляем UTC timezone
+        from datetime import timezone
+        date_obj = datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    slots = await service.get_available_slots(db, doctor_id, date_obj)
+    # Возвращаем ISO строки в UTC формате
+    return [slot.isoformat() for slot in slots]
+
+
 @router.put("/{appointment_id}/cancel", response_model=schemas.AppointmentRead)
 async def cancel_appointment(
         appointment_id: int,
