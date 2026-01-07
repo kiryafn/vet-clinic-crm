@@ -1,0 +1,327 @@
+/* Custom styles for react-big-calendar */
+.appointment-calendar-wrapper {
+    height: 100%;
+    width: 100%;
+}
+
+.appointment-calendar-wrapper .rbc-calendar {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+/* Header styling */
+.appointment-calendar-wrapper .rbc-header {
+    padding: 1rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #4b5563;
+    border-bottom: 2px solid #e5e7eb;
+    background: linear-gradient(to bottom, #f9fafb, #ffffff);
+}
+
+.appointment-calendar-wrapper .rbc-today {
+    background-color: #eff6ff;
+}
+
+/* Toolbar styling */
+.appointment-calendar-wrapper .rbc-toolbar {
+    padding: 1.5rem;
+    background: linear-gradient(to right, #f8fafc, #ffffff);
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 0;
+}
+
+.appointment-calendar-wrapper .rbc-toolbar button {
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin: 0 0.25rem;
+}
+
+.appointment-calendar-wrapper .rbc-toolbar button:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-calendar-wrapper .rbc-toolbar button:active,
+.appointment-calendar-wrapper .rbc-toolbar button.rbc-active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border-color: #6366f1;
+    box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
+}
+
+.appointment-calendar-wrapper .rbc-toolbar-label {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+    text-transform: capitalize;
+}
+
+/* Month view */
+.appointment-calendar-wrapper .rbc-month-view {
+    border: none;
+}
+
+.appointment-calendar-wrapper .rbc-month-row {
+    border-color: #e5e7eb;
+}
+
+.appointment-calendar-wrapper .rbc-date-cell {
+    text-align: right;
+    padding: 0.5rem;
+}
+
+.appointment-calendar-wrapper .rbc-date-cell > a {
+    color: #6b7280;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.appointment-calendar-wrapper .rbc-date-cell.rbc-now > a {
+    color: #6366f1;
+    font-weight: 700;
+    background: #eef2ff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    display: inline-block;
+}
+
+.appointment-calendar-wrapper .rbc-off-range-bg {
+    background: #f9fafb;
+}
+
+/* Week/Day view */
+.appointment-calendar-wrapper .rbc-time-view {
+    border: none;
+}
+
+.appointment-calendar-wrapper .rbc-time-header {
+    border-color: #e5e7eb;
+}
+
+.appointment-calendar-wrapper .rbc-time-header-content {
+    border-left: none;
+}
+
+.appointment-calendar-wrapper .rbc-time-content {
+    border-top: 2px solid #e5e7eb;
+}
+
+.appointment-calendar-wrapper .rbc-time-slot {
+    border-top: 1px solid #f3f4f6;
+}
+
+.appointment-calendar-wrapper .rbc-time-slot.rbc-now {
+    background-color: #fef3c7;
+}
+
+.appointment-calendar-wrapper .rbc-day-slot .rbc-time-slot {
+    border-top: 1px solid #f3f4f6;
+}
+
+.appointment-calendar-wrapper .rbc-time-gutter {
+    border-right: 2px solid #e5e7eb;
+}
+
+.appointment-calendar-wrapper .rbc-time-gutter .rbc-timeslot-group {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.appointment-calendar-wrapper .rbc-slot-past {
+    background-color: #f9fafb;
+    opacity: 0.6;
+}
+
+/* Event styling */
+.appointment-calendar-wrapper .rbc-event {
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0;
+    overflow: visible;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.appointment-calendar-wrapper .rbc-event:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    z-index: 10;
+}
+
+.appointment-calendar-wrapper .rbc-event.event-planned {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-left: 4px solid #4f46e5;
+}
+
+.appointment-calendar-wrapper .rbc-event.event-completed {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-left: 4px solid #047857;
+}
+
+.appointment-calendar-wrapper .rbc-event.event-cancelled {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border-left: 4px solid #b91c1c;
+    opacity: 0.7;
+}
+
+.appointment-calendar-wrapper .rbc-event.event-cancelled:hover {
+    opacity: 0.9;
+}
+
+/* Custom event component */
+.appointment-event {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    color: white;
+    position: relative;
+    min-height: 3rem;
+}
+
+.appointment-event.cancelled {
+    opacity: 0.7;
+    filter: grayscale(0.5);
+}
+
+.appointment-event.completed {
+    opacity: 0.95;
+}
+
+.event-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow: hidden;
+}
+
+.event-title {
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    margin-bottom: 0.125rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.event-doctor {
+    font-size: 0.75rem;
+    opacity: 0.95;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.event-reason {
+    font-size: 0.625rem;
+    opacity: 0.85;
+    margin-top: 0.25rem;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.event-cancel-btn {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    color: white;
+}
+
+.event-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
+}
+
+.event-cancel-btn:active {
+    transform: scale(0.95);
+}
+
+/* Agenda view */
+.appointment-calendar-wrapper .rbc-agenda-view {
+    border: none;
+}
+
+.appointment-calendar-wrapper .rbc-agenda-view table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.appointment-calendar-wrapper .rbc-agenda-date-cell,
+.appointment-calendar-wrapper .rbc-agenda-time-cell {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.appointment-calendar-wrapper .rbc-agenda-date-cell {
+    font-weight: 600;
+    color: #4b5563;
+    background: #f9fafb;
+}
+
+.appointment-calendar-wrapper .rbc-agenda-event-cell {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Selected slot styling */
+.appointment-calendar-wrapper .rbc-selected {
+    background-color: rgba(99, 102, 241, 0.1);
+}
+
+/* Today indicator */
+.appointment-calendar-wrapper .rbc-now {
+    font-weight: 700;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .appointment-calendar-wrapper .rbc-toolbar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .appointment-calendar-wrapper .rbc-toolbar button {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    .appointment-calendar-wrapper .rbc-toolbar-label {
+        font-size: 1rem;
+    }
+
+    .event-title {
+        font-size: 0.75rem;
+    }
+
+    .event-doctor {
+        font-size: 0.625rem;
+    }
+}
