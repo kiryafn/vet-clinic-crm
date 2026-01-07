@@ -238,7 +238,8 @@
     "unknown": "Unknown",
     "unknown_error": "An unknown error occurred",
     "validation_error": "Validation error occurred",
-    "error_occurred": "An error occurred"
+    "error_occurred": "An error occurred",
+    "network_error": "Network error: Could not connect to server. Please check your internet connection."
   },
   "booking": {
     "title": "Book Appointment",

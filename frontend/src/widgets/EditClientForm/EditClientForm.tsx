@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../shared/api/api';
 import { Button, Input, Card } from '../../shared/ui';
+import { useErrorHandler } from '../../shared/utils/errorHandler';
 
 interface Client {
     id: number;
@@ -19,6 +20,7 @@ interface EditClientFormProps {
 
 export const EditClientForm = ({ client, onSuccess, onCancel }: EditClientFormProps) => {
     const { t } = useTranslation();
+    const { extractError } = useErrorHandler();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -45,14 +47,7 @@ export const EditClientForm = ({ client, onSuccess, onCancel }: EditClientFormPr
             });
             onSuccess();
         } catch (err: any) {
-            const detail = err.response?.data?.detail;
-            if (Array.isArray(detail)) {
-                setError(detail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', '));
-            } else if (typeof detail === 'string') {
-                setError(detail);
-            } else {
-                setError(t('clients.update_failed', 'Failed to update client'));
-            }
+            setError(extractError(err));
         } finally {
             setIsLoading(false);
         }
@@ -88,7 +83,11 @@ export const EditClientForm = ({ client, onSuccess, onCancel }: EditClientFormPr
                     onChange={e => setAddress(e.target.value)} 
                 />
 
-                {error && <div className="text-red-500 text-sm">{error}</div>}
+                {error && (
+                    <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 text-sm whitespace-pre-line">
+                        {error}
+                    </div>
+                )}
 
                 <div className="flex gap-3 mt-2">
                     <Button

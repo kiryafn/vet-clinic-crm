@@ -80,8 +80,16 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
             const selectedDate = new Date(age + '-01');
             const today = new Date();
             today.setHours(23, 59, 59, 999);
+            
+            // Проверка на будущую дату
             if (selectedDate > today) {
                 newErrors.age = t('pet.validation.birth_date_future', 'Birth date cannot be in the future');
+            }
+            
+            // Проверка: год не должен быть меньше 1970
+            const year = parseInt(age.split('-')[0]);
+            if (year < 1970) {
+                newErrors.age = t('pet.validation.birth_year_min', 'Birth year cannot be earlier than 1970');
             }
         }
 
@@ -157,6 +165,7 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
                     error={errors.age}
                     className="w-full"
                     required
+                    min="1970-01"
                     max={new Date().toISOString().slice(0, 7)}
                 />
                 <Input

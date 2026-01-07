@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sessionApi } from '../../../../entities/session/api/sessionApi';
+import { useErrorHandler } from '../../../../shared/utils/errorHandler';
 
 export const useRegister = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const { extractError } = useErrorHandler();
 
     const register = async (data: any) => {
         setIsLoading(true);
@@ -19,23 +21,7 @@ export const useRegister = () => {
             navigate('/login');
         } catch (err: any) {
             console.error("Registration error:", err);
-
-            // Обработка ошибок (оставляем как было, она правильная)
-            if (err.response && err.response.data) {
-                const detail = err.response.data.detail;
-
-                if (Array.isArray(detail)) {
-                    setError(detail[0].msg);
-                } else if (typeof detail === 'string') {
-                    setError(detail);
-                } else {
-                    setError('Registration failed. Please try again.');
-                }
-            } else if (err.request) {
-                setError('No response from server. Check your internet connection.');
-            } else {
-                setError('Something went wrong.');
-            }
+            setError(extractError(err));
         } finally {
             setIsLoading(false);
         }

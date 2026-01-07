@@ -6,6 +6,7 @@ import { Header } from '../../widgets/Header/Header';
 import { Button, Input, Card, Alert } from '../../shared/ui';
 import { api } from '../../shared/api/api';
 import { appointmentApi } from '../../entities/appointment/api/appointmentApi';
+import { useErrorHandler } from '../../shared/utils/errorHandler';
 
 interface Doctor {
     id: number;
@@ -20,52 +21,10 @@ interface Pet {
     species: string;
 }
 
-// Функция для извлечения читаемого сообщения об ошибке из ответа FastAPI
-const extractErrorMessage = (error: any, t: (key: string, fallback?: string) => string): string => {
-    if (!error) return t('common.unknown_error');
-    
-    // Если это строка, возвращаем её
-    if (typeof error === 'string') return error;
-    
-    // Если это объект ошибки FastAPI/Pydantic с массивом detail
-    // Проверяем response.data.detail
-    if (error?.response?.data) {
-        const data = error.response.data;
-        
-        // Если detail - это массив (валидационные ошибки FastAPI/Pydantic)
-        if (Array.isArray(data.detail)) {
-            // Объединяем все сообщения об ошибках
-            const messages = data.detail
-                .filter((err: any) => err?.msg && typeof err.msg === 'string')
-                .map((err: any) => {
-                    const location = Array.isArray(err.loc) ? err.loc.slice(1).join('.') : '';
-                    return `${err.msg}${location ? ` (${location})` : ''}`;
-                });
-            return messages.length > 0 ? messages.join('; ') : t('common.validation_error');
-        }
-        
-        // Если detail - это строка
-        if (data.detail && typeof data.detail === 'string') {
-            return data.detail;
-        }
-    }
-    
-    // Если есть message
-    if (error?.message && typeof error.message === 'string') {
-        return error.message;
-    }
-    
-    // Если error - это объект, попробуем конвертировать в строку (для отладки)
-    try {
-        return JSON.stringify(error);
-    } catch {
-        return t('common.error_occurred');
-    }
-};
-
 export const BookAppointmentPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { extractError } = useErrorHandler();
 
     // Data state
     const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -109,7 +68,7 @@ export const BookAppointmentPage = () => {
                 setPets(Array.isArray(petsData) ? petsData : []);
             } catch (err: any) {
                 console.error('Failed to load data', err);
-                const errorMessage = extractErrorMessage(err, t) || t('booking.errors.load_failed');
+                const errorMessage = extractError(err) || t('booking.errors.load_failed');
                 setError(errorMessage);
             } finally {
                 setIsFetchingData(false);
@@ -136,7 +95,7 @@ export const BookAppointmentPage = () => {
                 setSlots(availableSlots || []);
             } catch (err: any) {
                 console.error('Error fetching slots:', err);
-                const errorMessage = extractErrorMessage(err, t) || t('booking.errors.slots_failed');
+                const errorMessage = extractError(err) || t('booking.errors.slots_failed');
                 setError(errorMessage);
             } finally {
                 setLoadingSlots(false);
@@ -202,7 +161,7 @@ export const BookAppointmentPage = () => {
             });
             navigate('/appointments');
         } catch (err: any) {
-            const errorMessage = extractErrorMessage(err, t) || t('booking.errors.book_failed');
+            const errorMessage = extractError(err) || t('booking.errors.book_failed');
             setError(errorMessage);
         } finally {
             setIsSubmitting(false);

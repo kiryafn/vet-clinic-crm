@@ -37,6 +37,9 @@ class PetCreate(BaseModel):
             today = date.today()
             if v > today:
                 raise ValueError('Birth date cannot be in the future')
+            # Валидация: год не должен быть меньше 1970
+            if v.year < 1970:
+                raise ValueError('Birth year cannot be earlier than 1970')
         return v
 
 
@@ -73,6 +76,9 @@ class PetUpdate(BaseModel):
             today = date.today()
             if v > today:
                 raise ValueError('Birth date cannot be in the future')
+            # Валидация: год не должен быть меньше 1970
+            if v.year < 1970:
+                raise ValueError('Birth year cannot be earlier than 1970')
         return v
 
 class PetRead(BaseModel):

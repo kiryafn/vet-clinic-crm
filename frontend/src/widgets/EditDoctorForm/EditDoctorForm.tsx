@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../shared/api/api';
 import { Button, Input, Card } from '../../shared/ui';
+import { useErrorHandler } from '../../shared/utils/errorHandler';
 
 // Match backend DoctorSpecialization enum
 enum DoctorSpecialization {
@@ -32,6 +33,7 @@ interface EditDoctorFormProps {
 
 export const EditDoctorForm = ({ doctor, onSuccess, onCancel }: EditDoctorFormProps) => {
     const { t } = useTranslation();
+    const { extractError } = useErrorHandler();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -70,14 +72,7 @@ export const EditDoctorForm = ({ doctor, onSuccess, onCancel }: EditDoctorFormPr
             await api.patch(`/doctors/${doctor.id}`, updateData);
             onSuccess();
         } catch (err: any) {
-            const detail = err.response?.data?.detail;
-            if (Array.isArray(detail)) {
-                setError(detail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', '));
-            } else if (typeof detail === 'string') {
-                setError(detail);
-            } else {
-                setError(t('doctors.form.update_failed', 'Failed to update doctor'));
-            }
+            setError(extractError(err));
         } finally {
             setIsLoading(false);
         }
@@ -147,7 +142,11 @@ export const EditDoctorForm = ({ doctor, onSuccess, onCancel }: EditDoctorFormPr
                     />
                 </div>
 
-                {error && <div className="text-red-500 text-sm">{error}</div>}
+                {error && (
+                    <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 text-sm whitespace-pre-line">
+                        {error}
+                    </div>
+                )}
 
                 <div className="flex gap-3 mt-2">
                     <Button

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { petApi } from '../../../../entities/pet';
 import { PetSpecies } from '../../../../entities/pet';
+import { useErrorHandler } from '../../../../shared/utils/errorHandler';
 
 interface CreatePetFormValues {
     name: string;
@@ -13,6 +14,7 @@ interface CreatePetFormValues {
 
 export const useCreatePet = () => {
     const navigate = useNavigate();
+    const { extractError } = useErrorHandler();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,18 +56,7 @@ export const useCreatePet = () => {
             // Успех -> редирект
             navigate('/');
         } catch (err: any) {
-            // Обработка ошибок (можно вынести в shared/lib/errorHandler)
-            const detail = err.response?.data?.detail;
-            if (Array.isArray(detail)) {
-                setError(detail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', '));
-            } else if (typeof detail === 'string') {
-                setError(detail);
-            } else if (err.message && !err.response) {
-                // Client-side error (e.g. invalid date validation)
-                setError(err.message);
-            } else {
-                setError('Failed to add pet');
-            }
+            setError(extractError(err));
         } finally {
             setIsLoading(false);
         }

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../shared/api/api';
 import { Button, Input, Card } from '../../shared/ui';
+import { useErrorHandler } from '../../shared/utils/errorHandler';
 
 // Match backend DoctorSpecialization enum
 enum DoctorSpecialization {
@@ -15,6 +16,7 @@ enum DoctorSpecialization {
 
 export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
     const { t } = useTranslation();
+    const { extractError } = useErrorHandler();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -51,14 +53,7 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
             setBio('');
             setSpecialization(DoctorSpecialization.THERAPIST);
         } catch (err: any) {
-            const detail = err.response?.data?.detail;
-            if (Array.isArray(detail)) {
-                setError(detail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join(', '));
-            } else if (typeof detail === 'string') {
-                setError(detail);
-            } else {
-                setError(t('doctors.form.create_failed'));
-            }
+            setError(extractError(err));
         } finally {
             setIsLoading(false);
         }
@@ -100,7 +95,11 @@ export const CreateDoctorForm = ({ onSuccess }: { onSuccess: () => void }) => {
                     />
                 </div>
 
-                {error && <div className="text-red-500 text-sm">{error}</div>}
+                {error && (
+                    <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 text-sm whitespace-pre-line">
+                        {error}
+                    </div>
+                )}
 
                 <Button type="submit" isLoading={isLoading}>{t('doctors.form.submit')}</Button>
             </form>
