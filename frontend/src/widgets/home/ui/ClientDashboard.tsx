@@ -34,9 +34,9 @@ export const ClientDashboard = () => {
             <DashboardActionCard
                 title={t('home.cards.my_appointments')}
                 description={t('home.cards.my_appointments_desc')}
-                actionText={t('home.cards.coming_soon')}
-                colorTheme="gray"
-                isDisabled={true}
+                actionText="View Schedule"
+                to="/appointments"
+                colorTheme="amber"
             />
         </div>
     );
