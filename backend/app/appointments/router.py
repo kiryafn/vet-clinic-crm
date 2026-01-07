@@ -86,18 +86,6 @@ async def read_appointments(
     return {"items": items, "total": total}
 
 
-@router.get("/{appointment_id}", response_model=schemas.AppointmentRead)
-async def read_appointment(
-        appointment_id: int,
-        db: SessionDep,
-        current_user: User = Depends(get_current_user),
-):
-    appointment = await service.get_appointment(db, appointment_id)
-    if not appointment:
-        raise HTTPException(status_code=404, detail="Appointment not found")
-    return appointment
-
-
 @router.get("/slots", response_model=List[str])
 async def get_available_slots(
         db: SessionDep,
@@ -132,6 +120,18 @@ async def get_available_slots(
         # Логируем ошибку для отладки
         logger.error(f"Error getting slots for doctor_id={doctor_id}, date={date}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error getting available slots: {str(e)}")
+
+
+@router.get("/{appointment_id}", response_model=schemas.AppointmentRead)
+async def read_appointment(
+        appointment_id: int,
+        db: SessionDep,
+        current_user: User = Depends(get_current_user),
+):
+    appointment = await service.get_appointment(db, appointment_id)
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    return appointment
 
 
 @router.put("/{appointment_id}/cancel", response_model=schemas.AppointmentRead)
