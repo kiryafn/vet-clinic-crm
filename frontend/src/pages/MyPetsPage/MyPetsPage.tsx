@@ -1,75 +1,74 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'; // Добавил хук для переводов
 import { Header } from '../../widgets/Header/Header';
-import { api } from '../../shared/api/api';
 import type { Pet } from '../../entities/pet/model/types';
 import { PetList } from '../../entities/pet/ui/PetList/PetList';
 import { Button } from '../../shared/ui';
 import { Modal } from '../../shared/ui/Modal/Modal';
-import { PetForm } from '../../features/pet/shared/PetForm';
+import { PetForm } from '../../features/pet/shared/PetForm'; // Убедись, что путь верный
 import { petApi } from '../../entities/pet/api/petApi';
 
 export const MyPetsPage = () => {
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+
+    // State
     const [pets, setPets] = useState<Pet[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editingPet, setEditingPet] = useState<Pet | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
-    const navigate = useNavigate();
 
-    const fetchPets = async () => {
+    // Pagination State
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const limit = 5; // Лимит: 5 животных на страницу
+
+    const fetchPets = useCallback(async () => {
+        setIsLoading(true);
         try {
-            const res = await api.get('/pets/');
-            setPets(res.data);
+            // Используем метод getAll из petApi, который теперь поддерживает пагинацию
+            const data = await petApi.getAll(page, limit);
+            setPets(data.items);
+            setTotal(data.total);
         } catch (e) {
             console.error(e);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [page]);
 
     useEffect(() => {
         fetchPets();
-    }, []);
+    }, [fetchPets]);
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this pet?')) return;
+        if (!window.confirm(t('pet.messages.delete_confirm'))) return;
         try {
             await petApi.delete(id);
-            setPets(prev => prev.filter(p => p.id !== id));
-        } catch (err) {
-            console.error("Failed to delete pet", err);
-            alert("Failed to delete pet");
+
+            // Если удалили последний элемент на странице и это не первая страница - идем назад
+            if (pets.length === 1 && page > 1) {
+                setPage(p => p - 1);
+            } else {
+                fetchPets(); // Иначе просто обновляем текущую
+            }
+        } catch (error) {
+            console.error(error);
+            alert(t('pet.messages.delete_fail'));
         }
     };
 
-    const handleUpdate = async (values: any) => {
+    const handleUpdate = async (data: any) => {
         if (!editingPet) return;
         setIsUpdating(true);
         try {
-            let birthDate = null;
-            if (values.age) {
-                if (/^\d{4}-\d{2}$/.test(values.age)) {
-                    birthDate = `${values.age}-01`;
-                } else if (/^\d{4}-\d{2}-\d{2}$/.test(values.age)) {
-                    // Already full date (e.g. from backend)
-                    birthDate = values.age;
-                } else {
-                    // Try parse generic
-                    const d = new Date(values.age);
-                    if (!isNaN(d.getTime())) birthDate = d.toISOString().split('T')[0];
-                }
-            }
-
-            const updatedPet = await petApi.update(editingPet.id, {
-                ...values,
-                birth_date: birthDate
-            });
-
-            setPets(prev => prev.map(p => p.id === updatedPet.id ? updatedPet : p));
+            await petApi.update(editingPet.id, data);
             setEditingPet(null);
+            fetchPets(); // Обновляем список, чтобы увидеть изменения
         } catch (error) {
-            console.error("Failed to update pet", error);
-            alert("Failed to update pet");
+            console.error(error);
+            alert(t('pet.messages.update_fail'));
         } finally {
             setIsUpdating(false);
         }
@@ -79,25 +78,25 @@ export const MyPetsPage = () => {
         <div className="min-h-screen bg-gray-50 pb-12">
             <Header />
             <div className="container mx-auto px-4 py-8 pt-24">
-                <div className="mb-6 flex justify-between items-center">
-                    <Button
-                        variant="ghost"
-                        onClick={() => navigate('/')}
-                        className="gap-2 text-gray-600 hover:text-gray-900"
-                    >
-                        ← Back to Home
-                    </Button>
-                    <Button
-                        onClick={() => navigate('/add-pet')}
-                        className="shadow-lg shadow-indigo-500/20"
-                    >
-                        + Add New Pet
-                    </Button>
-                </div>
-
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">My Pets</h1>
-                    <p className="text-gray-500 mt-2">Manage your furry friends profile and details</p>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">{t('pet.list_title')}</h1>
+                        <p className="text-gray-500 mt-2">{t('pet.list_subtitle')}</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/')}
+                        >
+                            {t('pet.back_home')}
+                        </Button>
+                        <Button
+                            onClick={() => navigate('/add-pet')}
+                            className="shadow-lg shadow-indigo-500/20"
+                        >
+                            + {t('pet.add_new')}
+                        </Button>
+                    </div>
                 </div>
 
                 <PetList
@@ -108,12 +107,17 @@ export const MyPetsPage = () => {
                         const pet = pets.find(p => p.id === id);
                         if (pet) setEditingPet(pet);
                     }}
+                    // Передаем пропсы пагинации
+                    page={page}
+                    total={total}
+                    limit={limit}
+                    onPageChange={setPage}
                 />
 
                 <Modal
                     isOpen={!!editingPet}
                     onClose={() => setEditingPet(null)}
-                    title="Edit Pet"
+                    title={t('pet.form.title_edit')}
                 >
                     {editingPet && (
                         <PetForm
@@ -121,12 +125,12 @@ export const MyPetsPage = () => {
                                 name: editingPet.name,
                                 species: typeof editingPet.species === 'string' ? editingPet.species : 'DOG',
                                 breed: editingPet.breed || '',
-                                age: editingPet.birth_date || '',
-                                weight: '' // We don't have weight in Pet model yet
+                                birth_date: editingPet.birth_date || '', // birth_date для формы
+                                weight: ''
                             }}
                             onSubmit={handleUpdate}
                             isLoading={isUpdating}
-                            submitLabel="Save Changes"
+                            submitLabel={t('pet.form.save')}
                             onCancel={() => setEditingPet(null)}
                         />
                     )}

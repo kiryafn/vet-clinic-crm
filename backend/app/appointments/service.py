@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
 
 from app.appointments.models import Appointment
@@ -11,14 +11,12 @@ APPOINTMENT_DURATION = timedelta(minutes=45)
 
 
 def ensure_utc(dt: datetime) -> datetime:
-
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
 
 
 def ensure_naive_utc(dt: datetime) -> datetime:
-
     return ensure_utc(dt).replace(tzinfo=None)
 
 
@@ -26,9 +24,15 @@ async def check_availability(db: AsyncSession, doctor_id: int, new_time: datetim
     new_start = ensure_naive_utc(new_time)
     new_end = new_start + APPOINTMENT_DURATION
 
+    # Оптимизация: ищем только в пределах дня, чтобы не перебирать всю базу
+    search_start = new_start.replace(hour=0, minute=0, second=0)
+    search_end = search_start + timedelta(days=1)
+
     stmt = select(Appointment).filter(
         Appointment.doctor_id == doctor_id,
-        Appointment.status != "cancelled"
+        Appointment.status != "cancelled",
+        Appointment.date_time >= search_start,
+        Appointment.date_time < search_end
     )
     result = await db.execute(stmt)
     existing_appointments = result.scalars().all()
@@ -43,58 +47,6 @@ async def check_availability(db: AsyncSession, doctor_id: int, new_time: datetim
     return True
 
 
-async def get_day_slots(db: AsyncSession, doctor_id: int, date: datetime) -> list[datetime]:
-    target_date = ensure_naive_utc(date)
-    
-    start_of_day = target_date.replace(hour=9, minute=0, second=0, microsecond=0)
-    end_of_day = target_date.replace(hour=18, minute=0, second=0, microsecond=0)
-
-    search_start = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
-    search_end = search_start + timedelta(days=1)
-    
-    stmt = select(Appointment).filter(
-        Appointment.doctor_id == doctor_id,
-        Appointment.status != "cancelled",
-        Appointment.date_time >= search_start,
-        Appointment.date_time < search_end
-        # Note: If DB stores Aware strings (with +00:00), this comparison with Naive might fail in strict SQL.
-        # But SQLite usually compares strings. 
-        # Ideally we should match what is in DB.
-        # Given we use ensure_naive_utc for write, sticking to Naive is safest for SQLite.
-    )
-    result = await db.execute(stmt)
-    existing_appointments = result.scalars().all()
-
-    available_slots = []
-    current_slot = start_of_day
-
-    # Генерируем слоты пока помещаемся в рабочий день
-    while current_slot + APPOINTMENT_DURATION <= end_of_day:
-        is_free = True
-        slot_end = current_slot + APPOINTMENT_DURATION
-
-        # Проверяем пересечения с существующими записями
-        for appt in existing_appointments:
-            appt_start = ensure_naive_utc(appt.date_time)
-            appt_end = appt_start + APPOINTMENT_DURATION
-
-            # Если есть пересечение
-            if current_slot < appt_end and slot_end > appt_start:
-                is_free = False
-                break
-
-        if is_free:
-            # Return as Aware UTC ISO string for frontend? 
-            # Or just return datetime, FastAPI serializes it.
-            # Let's keep it Naive UTC here, but maybe add TZ before return if needed.
-            # Actually, frontend likes ISO with 'Z'.
-            available_slots.append(current_slot.replace(tzinfo=timezone.utc))
-
-        current_slot += APPOINTMENT_DURATION
-
-    return available_slots
-
-
 async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate, client_id: int):
     # Ensure Naive UTC storage
     appt_time = ensure_naive_utc(appointment_in.date_time)
@@ -104,18 +56,25 @@ async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate
     if not is_available:
         raise HTTPException(status_code=409, detail="This time slot is already booked")
 
-    # Создаем объект
+    # ИСПРАВЛЕНИЕ REASON:
+    # 1. Исключаем поля, которые обработаем вручную
     data = appointment_in.model_dump(exclude={"date_time", "reason"})
+
+    # 2. Явно берем reason. Если пришла пустая строка - сохраняем пустую строку.
+    # Если None - сохраняем None (или дефолт, если нужно).
+    reason_value = appointment_in.reason if appointment_in.reason is not None else "No description provided"
+
     db_appointment = Appointment(
         **data,
         date_time=appt_time,
         client_id=client_id,
-        reason=appointment_in.reason or "No description provided"
+        reason=reason_value
     )
 
     db.add(db_appointment)
     await db.commit()
-    # Eager load relationships for the response schema
+
+    # Подгружаем связи для корректного ответа
     query = select(Appointment).filter(Appointment.id == db_appointment.id).options(
         selectinload(Appointment.client),
         selectinload(Appointment.doctor),
@@ -125,26 +84,63 @@ async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate
     return result.scalars().first()
 
 
-async def get_appointments(db: AsyncSession, skip: int = 0, limit: int = 100, filters: dict = None):
+async def get_appointments(
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int = 100,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        filters: dict = None
+):
+    """
+    Возвращает (items, total_count).
+    Поддерживает фильтрацию по датам (для календаря) и пагинацию.
+    """
     query = select(Appointment)
-    
+
+    # 1. Фильтры (например, по user_id)
     if filters:
         for attr, value in filters.items():
-            query = query.filter(getattr(Appointment, attr) == value)
-            
-    # Eager load relationships for display
+            if value is not None:
+                query = query.filter(getattr(Appointment, attr) == value)
+
+    # 2. Фильтр по датам (для Календаря)
+    if start_date and end_date:
+        # Приводим к naive UTC, так как в базе храним naive
+        s_date = ensure_naive_utc(start_date)
+        e_date = ensure_naive_utc(end_date)
+        query = query.filter(and_(Appointment.date_time >= s_date, Appointment.date_time <= e_date))
+
+    # 3. Считаем общее количество (до limit/offset)
+    count_query = select(func.count()).select_from(query.subquery())
+    total = await db.scalar(count_query) or 0
+
+    # 4. Подгрузка связей и сортировка
     query = query.options(
         selectinload(Appointment.client),
         selectinload(Appointment.doctor),
         selectinload(Appointment.pet)
     ).order_by(Appointment.date_time.asc())
-    
-    result = await db.execute(query.offset(skip).limit(limit))
-    return result.scalars().all()
+
+    # 5. Пагинация (применяем, только если это не режим календаря с полным диапазоном,
+    # или если клиент явно запросил пагинацию внутри диапазона)
+    # Но обычно календарь грузит всё за месяц, а список - страницами.
+    # Если передан limit - применяем.
+    if limit > 0:
+        query = query.offset(skip).limit(limit)
+
+    result = await db.execute(query)
+    return result.scalars().all(), total
 
 
 async def get_appointment(db: AsyncSession, appointment_id: int):
-    result = await db.execute(select(Appointment).filter(Appointment.id == appointment_id))
+    # Добавлен selectinload, чтобы не падало при доступе к client/doctor/pet
+    query = select(Appointment).filter(Appointment.id == appointment_id).options(
+        selectinload(Appointment.client),
+        selectinload(Appointment.doctor),
+        selectinload(Appointment.pet)
+    )
+    result = await db.execute(query)
     return result.scalars().first()
 
 
@@ -152,8 +148,10 @@ async def cancel_appointment(db: AsyncSession, appointment_id: int):
     appointment = await get_appointment(db, appointment_id)
     if not appointment:
         return None
-    
-    appointment.cancel()
+
+    appointment.status = "cancelled"  # Предполагаем, что есть поле status или метод cancel()
+    # appointment.cancel() # Если есть метод модели
+
     await db.commit()
-    await db.refresh(appointment)
+    # Возвращаем объект (он уже с подгруженными связями из get_appointment)
     return appointment

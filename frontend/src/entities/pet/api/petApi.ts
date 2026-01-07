@@ -1,9 +1,16 @@
 import { api } from '../../../shared/api/api';
 import type { Pet, PetCreate, PetUpdate } from '../model/types';
 
+export interface PaginatedPetsResponse {
+    items: Pet[];
+    total: number;
+}
+
 export const petApi = {
-    getAll: async (): Promise<Pet[]> => {
-        const response = await api.get<Pet[]>('/pets/');
+    getAll: async (page = 1, limit = 5): Promise<PaginatedPetsResponse> => {
+        const response = await api.get<PaginatedPetsResponse>('/pets/', {
+            params: { page, limit }
+        });
         return response.data;
     },
 

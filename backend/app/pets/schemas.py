@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel, ConfigDict
 from datetime import date
 
@@ -25,3 +27,7 @@ class PetRead(BaseModel):
     age: dict | None
 
     model_config = ConfigDict(from_attributes=True)
+
+class PaginatedPets(BaseModel):
+    items: List[PetRead]
+    total: int

@@ -1,10 +1,9 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Query
 from app.core.db import SessionDep
 from app.users.dependencies import CurrentUser
 from app.pets import schemas, service as pet_service
 
 router = APIRouter(prefix="/pets", tags=["Pets"])
-
 
 @router.post("/", response_model=schemas.PetRead, status_code=status.HTTP_201_CREATED)
 async def create_pet(
@@ -15,7 +14,7 @@ async def create_pet(
     if not current_user.client_profile:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only users with Client profile can add pets. Doctors cannot have pets on this account."
+            detail="Only users with Client profile can add pets."
         )
 
     return await pet_service.create_pet(
@@ -24,20 +23,26 @@ async def create_pet(
         owner_id=current_user.client_profile.id
     )
 
-
-@router.get("/", response_model=list[schemas.PetRead])
+@router.get("/", response_model=schemas.PaginatedPets)
 async def get_my_pets(
         db: SessionDep,
-        current_user: CurrentUser
+        current_user: CurrentUser,
+        page: int = Query(1, ge=1),
+        limit: int = Query(5, ge=1, le=100) # По умолчанию 5
 ):
     if not current_user.client_profile:
-        return []
+        return {"items": [], "total": 0}
 
-    return await pet_service.get_pets_by_owner(
+    skip = (page - 1) * limit
+
+    items, total = await pet_service.get_pets_by_owner(
         db=db,
-        owner_id=current_user.client_profile.id
+        owner_id=current_user.client_profile.id,
+        skip=skip,
+        limit=limit
     )
 
+    return {"items": items, "total": total}
 
 @router.delete("/{pet_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_pet(

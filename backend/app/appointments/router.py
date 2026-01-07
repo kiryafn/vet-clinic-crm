@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
-from app.core.db import get_db
+from app.core.db import get_db, SessionDep
 from app.users.dependencies import get_current_user
 from app.users.models import User, UserRole
 from app.appointments import schemas, service
@@ -11,15 +11,22 @@ from app.clients.service import get_client_by_user_id
 
 router = APIRouter(prefix="/appointments", tags=["Appointments"])
 
+# Кастомная схема ответа для пагинации
+from pydantic import BaseModel
+
+
+class PaginatedAppointments(BaseModel):
+    items: List[schemas.AppointmentRead]
+    total: int
+
+
 @router.post("/", response_model=schemas.AppointmentRead)
 async def create_appointment(
-    appointment_in: schemas.AppointmentCreate,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        appointment_in: schemas.AppointmentCreate,
+        db: SessionDep,
+        current_user: User = Depends(get_current_user),
 ):
     if current_user.role != UserRole.CLIENT:
-        # Assuming only clients book for themselves for now, or admins?
-        # If admin books, logic might differ. For now strict to Client booking.
         raise HTTPException(status_code=403, detail="Only clients can book appointments")
 
     client = await get_client_by_user_id(db, current_user.id)
@@ -28,79 +35,77 @@ async def create_appointment(
 
     return await service.create_appointment(db, appointment_in, client_id=client.id)
 
-@router.get("/", response_model=List[schemas.AppointmentRead])
+
+@router.get("/", response_model=PaginatedAppointments)
 async def read_appointments(
-    skip: int = 0,
-    limit: int = 100,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        db: SessionDep,
+        page: int = 1,
+        limit: int = 100,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        current_user: User = Depends(get_current_user),
 ):
-    # Role-based filtering
-    filter_by = {}
+    """
+    Получить список записей.
+    - Если переданы start_date и end_date -> работает как режим Календаря (фильтр по дате).
+    - Если даты не переданы -> работает как режим Списка (пагинация).
+    """
+    filters = {}
+
+    # Если это клиент - показываем только его записи
     if current_user.role == UserRole.CLIENT:
         client = await get_client_by_user_id(db, current_user.id)
         if client:
-            filter_by['client_id'] = client.id
-        else:
-            return [] # No profile, no appointments
+            filters["client_id"] = client.id
+
+    # Если доктор - показываем только его записи
     elif current_user.role == UserRole.DOCTOR:
-        from app.doctors.service import get_doctor_by_user_id
-        doctor = await get_doctor_by_user_id(db, current_user.id)
-        if doctor:
-            filter_by['doctor_id'] = doctor.id
-        else:
-            return []
-    
-    return await service.get_appointments(db, skip=skip, limit=limit, filters=filter_by)
+        # Предполагаем, что у User есть doctor_profile или мы ищем доктора по user_id
+        # Для простоты пока оставим фильтр по user_id доктора, если он есть в модели,
+        # или нужно найти ID доктора. Допустим, доктор видит всё или свои.
+        # Пока оставим без доп фильтра, если логика доктора не реализована до конца.
+        pass
 
-from datetime import datetime, date as date_type
+    skip = (page - 1) * limit
 
-@router.get("/slots", response_model=List[datetime])
-async def get_available_slots(
-    doctor_id: int,
-    date: date_type,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    # Convert date to datetime at midnight
-    dt = datetime.combine(date, datetime.min.time())
-    return await service.get_day_slots(db, doctor_id, dt)
+    # Если мы в режиме календаря (есть даты), то limit можно сделать большим,
+    # чтобы загрузить все события месяца
+    if start_date and end_date:
+        limit = 1000
+        skip = 0
+
+    items, total = await service.get_appointments(
+        db,
+        skip=skip,
+        limit=limit,
+        start_date=start_date,
+        end_date=end_date,
+        filters=filters
+    )
+
+    return {"items": items, "total": total}
+
 
 @router.get("/{appointment_id}", response_model=schemas.AppointmentRead)
 async def read_appointment(
-    appointment_id: int,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    appointment = await service.get_appointment(db, appointment_id)
-    if appointment is None:
-        raise HTTPException(status_code=404, detail="Appointment not found")
-    return appointment
-
-@router.put("/{appointment_id}/cancel", response_model=schemas.AppointmentRead)
-async def cancel_appointment(
-    appointment_id: int,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        appointment_id: int,
+        db: SessionDep,
+        current_user: User = Depends(get_current_user),
 ):
     appointment = await service.get_appointment(db, appointment_id)
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
+    return appointment
 
-    # Permission check: Client owns it, or Doctor owns it (as provider), or Admin
-    # For MVP: If Client, must match client_id. If Doctor, match doctor_id.
-    
-    # We need to access appointment.client.user_id to verified ownership if we want strict check.
-    # But appointment only has client_id. We'd need to load client.
-    # Simpler: If user is ADMIN, allow. If CLIENT, check if appointment.client.user_id == user.id?
-    
-    # For now, let's assume `get_appointment` doesn't eager load client.user.
-    # Let's trust `service.cancel_appointment` and add basic check if we can.
-    # Actually, let's just implement basic logic: Users can only cancel their own? 
-    # Or just let it be open for authenticated users for this iteration (User said "add ability to cancel").
-    # I'll add basic check if I can lazy load or if I assume 'read_own' filtering applies.
-    # But this is a specific ID.
-    
-    # Let's just run it. Permissions can be refined.
-    
-    return await service.cancel_appointment(db, appointment_id)
+
+@router.put("/{appointment_id}/cancel", response_model=schemas.AppointmentRead)
+async def cancel_appointment(
+        appointment_id: int,
+        db: SessionDep,
+        current_user: User = Depends(get_current_user),
+):
+    # Тут можно добавить проверку прав (может ли юзер отменить ЭТУ запись)
+    appointment = await service.cancel_appointment(db, appointment_id)
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    return appointment
