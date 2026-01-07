@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { Calendar, dateFnsLocalizer, Views, type View, type Event, type SlotInfo } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS, uk } from 'date-fns/locale';
@@ -8,6 +8,8 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import type { Appointment } from '../model/types';
 import { AppointmentStatus } from '../model/types';
 import { UserRole } from '../../../entities/user/model/types';
+import { Modal } from '../../../shared/ui/Modal/Modal';
+import { Button } from '../../../shared/ui';
 
 const locales = { 'en': enUS, 'uk': uk };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
@@ -21,11 +23,12 @@ interface CustomEventProps {
     onCancel?: (id: number) => void;
     onComplete?: (id: number) => void;
     onDelete?: (id: number) => void;
+    onSelect?: (appointment: Appointment) => void;
     userRole?: UserRole;
     view?: View;
 }
 
-const CustomEvent = ({ event, onCancel, onComplete, onDelete, userRole, view }: CustomEventProps) => {
+const CustomEvent = ({ event, onCancel, onComplete, onDelete, onSelect, userRole, view }: CustomEventProps) => {
     const { t } = useTranslation();
     const apt = event.resource;
     const isCancelled = apt.status === AppointmentStatus.CANCELLED;
@@ -34,6 +37,13 @@ const CustomEvent = ({ event, onCancel, onComplete, onDelete, userRole, view }: 
     const isAdmin = userRole === UserRole.ADMIN;
     const isMonthView = view === Views.MONTH;
     const isAgendaView = view === Views.AGENDA;
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onSelect) {
+            onSelect(apt);
+        }
+    };
 
     const handleCancel = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -69,7 +79,7 @@ const CustomEvent = ({ event, onCancel, onComplete, onDelete, userRole, view }: 
     // Для agenda view используем черный текст
     if (isAgendaView) {
         return (
-            <div className="w-full">
+            <div onClick={handleClick} className="w-full cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
                 <div className={`font-semibold text-sm text-gray-900 ${isCompleted ? '' : isCancelled ? 'line-through opacity-70' : ''}`}>
                     <span className="mr-1">{statusEmoji}</span>
                     {apt.pet?.name || t('appointments.fallbacks.pet')}
@@ -101,11 +111,12 @@ const CustomEvent = ({ event, onCancel, onComplete, onDelete, userRole, view }: 
     if (isMonthView) {
         return (
             <div
-                className={`h-full flex items-center px-1 py-0.5 text-white relative min-h-[1.25rem] rounded transition-all ${eventBgColor} ${isCancelled ? 'grayscale opacity-70' : ''}`}
+                onClick={handleClick}
+                className={`h-full flex items-center px-1.5 py-1 text-white relative min-h-[1.5rem] rounded transition-all cursor-pointer hover:opacity-90 ${eventBgColor} ${isCancelled ? 'grayscale opacity-70' : ''}`}
             >
-                <div className="flex-1 flex items-center gap-0.5 overflow-hidden min-w-0">
-                    <span className="text-[0.5625rem] flex-shrink-0">{statusEmoji}</span>
-                    <span className="font-semibold text-[0.625rem] leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
+                <div className="flex-1 flex items-center gap-1 overflow-hidden min-w-0">
+                    <span className="text-[0.625rem] flex-shrink-0 leading-none">{statusEmoji}</span>
+                    <span className="font-medium text-[0.6875rem] leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
                         {apt.pet?.name || t('appointments.fallbacks.pet')}
                     </span>
                 </div>
@@ -116,61 +127,32 @@ const CustomEvent = ({ event, onCancel, onComplete, onDelete, userRole, view }: 
     // Для Week/Day view показываем больше информации, но аккуратно
     return (
         <div
-            className={`h-full flex flex-col p-1.5 text-white relative min-h-[3rem] rounded transition-all hover:shadow-lg hover:z-10 ${eventBgColor} ${isCancelled ? 'grayscale opacity-70' : ''}`}
+            onClick={handleClick}
+            className={`h-full flex flex-col p-2 text-white relative min-h-[3.5rem] rounded transition-all hover:shadow-lg hover:z-10 cursor-pointer ${eventBgColor} ${isCancelled ? 'grayscale opacity-70' : ''}`}
         >
             <div className="flex-1 flex flex-col gap-1 overflow-hidden">
-                <div className="font-bold text-sm leading-tight overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1">
-                    <span>{statusEmoji}</span>
-                    <span>{apt.pet?.name || t('appointments.fallbacks.pet')}</span>
-                    {apt.pet?.species && (
-                        <span className="opacity-90 text-xs font-normal">({apt.pet.species})</span>
-                    )}
+                <div className="font-bold text-xs leading-tight overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1">
+                    <span className="text-xs">{statusEmoji}</span>
+                    <span className="truncate">{apt.pet?.name || t('appointments.fallbacks.pet')}</span>
                 </div>
+                {apt.pet?.species && (
+                    <div className="text-[0.625rem] opacity-90 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {apt.pet.species}
+                    </div>
+                )}
                 {isDoctor ? (
-                    <div className="text-xs opacity-95 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <div className="text-[0.625rem] opacity-95 overflow-hidden text-ellipsis whitespace-nowrap">
                         👤 {apt.client?.full_name || t('appointments.fallbacks.client')}
                     </div>
                 ) : (
-                    <div className="text-xs opacity-95 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <div className="text-[0.625rem] opacity-95 overflow-hidden text-ellipsis whitespace-nowrap">
                         👨‍⚕️ {apt.doctor?.full_name || t('appointments.fallbacks.doctor')}
                     </div>
                 )}
                 {apt.reason && (
-                    <div className="text-[0.625rem] opacity-85 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <div className="text-[0.5625rem] opacity-85 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
                         💬 {apt.reason}
                     </div>
-                )}
-            </div>
-            <div className="absolute top-1 right-1 flex gap-1">
-                {isAdmin && onDelete && (
-                    <button
-                        onClick={handleDelete}
-                        className="bg-red-500/80 border border-red-600/60 rounded p-1 cursor-pointer flex items-center justify-center transition-all backdrop-blur-sm text-white hover:bg-red-600/90 hover:border-red-700/80 hover:scale-110 active:scale-95 w-5 h-5 flex-shrink-0"
-                        aria-label={t('appointments.actions.delete', 'Delete')}
-                        title={t('appointments.actions.delete', 'Delete')}
-                    >
-                        <X size={10} />
-                    </button>
-                )}
-                {isDoctor && onComplete && !isCancelled && !isCompleted && (
-                    <button
-                        onClick={handleComplete}
-                        className="bg-green-500/80 border border-green-600/60 rounded p-1 cursor-pointer flex items-center justify-center transition-all backdrop-blur-sm text-white hover:bg-green-600/90 hover:border-green-700/80 hover:scale-110 active:scale-95 w-5 h-5 flex-shrink-0"
-                        aria-label={t('appointments.actions.complete', 'Complete')}
-                        title={t('appointments.actions.complete', 'Complete')}
-                    >
-                        ✓
-                    </button>
-                )}
-                {onCancel && !isCancelled && !isCompleted && (
-                    <button
-                        onClick={handleCancel}
-                        className="bg-white/30 border border-white/40 rounded p-1 cursor-pointer flex items-center justify-center transition-all backdrop-blur-sm text-white hover:bg-white/50 hover:border-white/70 hover:scale-110 active:scale-95 w-5 h-5 flex-shrink-0"
-                        aria-label={t('appointments.actions.cancel')}
-                        title={t('appointments.actions.cancel')}
-                    >
-                        <X size={10} />
-                    </button>
                 )}
             </div>
         </div>
@@ -205,6 +187,7 @@ export const AppointmentCalendar = ({
     userRole,
 }: AppointmentCalendarProps) => {
     const { i18n, t } = useTranslation();
+    const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
     const events: CalendarEvent[] = useMemo(() => {
         const isDoctor = userRole === UserRole.DOCTOR;
@@ -314,19 +297,29 @@ export const AppointmentCalendar = ({
                 }
                 .rbc-month-view .rbc-event {
                     margin: 0.125rem 0.25rem;
-                    border-radius: 0.25rem;
+                    border-radius: 0.375rem;
                     overflow: hidden;
+                    border: none;
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                 }
                 .rbc-time-view .rbc-event {
                     margin: 0.125rem 0.375rem;
-                    border-radius: 0.375rem;
+                    border-radius: 0.5rem;
+                    border: none;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 }
                 .rbc-month-view .rbc-day-bg {
                     min-height: 100px;
                 }
                 .rbc-month-view .rbc-event {
                     font-size: 0.625rem;
-                    line-height: 1.2;
+                    line-height: 1.3;
+                }
+                .rbc-event-content {
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
                 }
                 .rbc-agenda-view table {
                     width: 100%;
@@ -388,6 +381,7 @@ export const AppointmentCalendar = ({
                             onCancel={onCancelAppointment}
                             onComplete={onCompleteAppointment}
                             onDelete={onDeleteAppointment}
+                            onSelect={(apt) => setSelectedAppointment(apt)}
                             userRole={userRole}
                             view={view}
                         />
@@ -408,6 +402,226 @@ export const AppointmentCalendar = ({
                         `${format(start, 'HH:mm')} - ${format(end, 'HH:mm')}`,
                 }}
             />
+
+            {/* Modal with appointment details */}
+            {selectedAppointment && (
+                <AppointmentDetailModal
+                    appointment={selectedAppointment}
+                    onClose={() => setSelectedAppointment(null)}
+                    onCancel={onCancelAppointment}
+                    onComplete={onCompleteAppointment}
+                    onDelete={onDeleteAppointment}
+                    userRole={userRole}
+                    t={t}
+                    i18n={i18n}
+                />
+            )}
         </div>
+    );
+};
+
+// Modal component for appointment details
+interface AppointmentDetailModalProps {
+    appointment: Appointment;
+    onClose: () => void;
+    onCancel?: (id: number) => void;
+    onComplete?: (id: number) => void;
+    onDelete?: (id: number) => void;
+    userRole?: UserRole;
+    t: (key: string, fallback?: string) => string;
+    i18n: { language: string };
+}
+
+const AppointmentDetailModal = ({
+    appointment: apt,
+    onClose,
+    onCancel,
+    onComplete,
+    onDelete,
+    userRole,
+    t,
+    i18n,
+}: AppointmentDetailModalProps) => {
+    const isCancelled = apt.status === AppointmentStatus.CANCELLED;
+    const isCompleted = apt.status === AppointmentStatus.COMPLETED;
+    const isDoctor = userRole === UserRole.DOCTOR;
+    const isAdmin = userRole === UserRole.ADMIN;
+
+    const handleCancel = () => {
+        if (onCancel && !isCancelled && !isCompleted) {
+            if (window.confirm(t('appointments.actions.confirm_cancel'))) {
+                onCancel(apt.id);
+                onClose();
+            }
+        }
+    };
+
+    const handleComplete = () => {
+        if (onComplete && !isCancelled && !isCompleted) {
+            onComplete(apt.id);
+            onClose();
+        }
+    };
+
+    const handleDelete = () => {
+        if (onDelete && isAdmin) {
+            if (window.confirm(t('appointments.actions.confirm_delete'))) {
+                onDelete(apt.id);
+                onClose();
+            }
+        }
+    };
+
+    const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return {
+            date: date.toLocaleDateString(i18n.language, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            }),
+            time: date.toLocaleTimeString(i18n.language, {
+                hour: '2-digit',
+                minute: '2-digit',
+            }),
+        };
+    };
+
+    const { date: dateStr, time: timeStr } = formatDateTime(apt.date_time);
+
+    const statusColors = {
+        planned: 'bg-blue-100 text-blue-800',
+        completed: 'bg-green-100 text-green-800',
+        cancelled: 'bg-red-100 text-red-800',
+    };
+
+    return (
+        <Modal isOpen={true} onClose={onClose} title={t('appointments.details.title', 'Appointment Details')}>
+            <div className="space-y-6">
+                {/* Status */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('appointments.list.headers.status', 'Status')}
+                    </label>
+                    <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                            statusColors[apt.status] || statusColors.planned
+                        }`}
+                    >
+                        {t(`appointments.status.${apt.status}`)}
+                    </span>
+                </div>
+
+                {/* Date & Time */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('appointments.list.headers.date_time', 'Date & Time')}
+                    </label>
+                    <div className="text-gray-900 font-medium">{dateStr}</div>
+                    <div className="text-gray-600">{timeStr}</div>
+                </div>
+
+                {/* Pet */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('appointments.list.headers.pet', 'Pet')}
+                    </label>
+                    <div className="text-gray-900 font-medium">
+                        🐾 {apt.pet?.name || t('appointments.fallbacks.pet')}
+                    </div>
+                    {apt.pet?.species && (
+                        <div className="text-sm text-gray-600 capitalize">{apt.pet.species}</div>
+                    )}
+                </div>
+
+                {/* Client */}
+                {isDoctor && apt.client && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {t('appointments.list.headers.client', 'Client')}
+                        </label>
+                        <div className="text-gray-900 font-medium">
+                            👤 {apt.client.full_name}
+                        </div>
+                        {apt.client.phone_number && (
+                            <div className="text-sm text-gray-600">{apt.client.phone_number}</div>
+                        )}
+                    </div>
+                )}
+
+                {/* Doctor */}
+                {!isDoctor && apt.doctor && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {t('appointments.list.headers.doctor', 'Doctor')}
+                        </label>
+                        <div className="text-gray-900 font-medium">
+                            👨‍⚕️ {apt.doctor.full_name}
+                        </div>
+                        {apt.doctor.specialization && (
+                            <div className="text-sm text-gray-600">
+                                {t(`doctors.specializations.${apt.doctor.specialization}`, apt.doctor.specialization)}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Reason */}
+                {apt.reason && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {t('appointments.list.headers.reason', 'Reason')}
+                        </label>
+                        <div className="text-gray-900">{apt.reason}</div>
+                    </div>
+                )}
+
+                {/* Doctor Notes */}
+                {apt.doctor_notes && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {t('appointments.details.doctor_notes', 'Doctor Notes')}
+                        </label>
+                        <div className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap">
+                            {apt.doctor_notes}
+                        </div>
+                    </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
+                    {isDoctor && onComplete && !isCancelled && !isCompleted && (
+                        <Button
+                            onClick={handleComplete}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                            ✓ {t('appointments.actions.complete', 'Complete')}
+                        </Button>
+                    )}
+                    {onCancel && !isCancelled && !isCompleted && (
+                        <Button
+                            onClick={handleCancel}
+                            variant="outline"
+                            className="border-red-300 text-red-700 hover:bg-red-50"
+                        >
+                            {t('appointments.actions.cancel', 'Cancel')}
+                        </Button>
+                    )}
+                    {isAdmin && onDelete && (
+                        <Button
+                            onClick={handleDelete}
+                            variant="outline"
+                            className="border-red-300 text-red-700 hover:bg-red-50"
+                        >
+                            {t('appointments.actions.delete', 'Delete')}
+                        </Button>
+                    )}
+                    <Button onClick={onClose} variant="outline" className="ml-auto">
+                        {t('common.close', 'Close')}
+                    </Button>
+                </div>
+            </div>
+        </Modal>
     );
 };

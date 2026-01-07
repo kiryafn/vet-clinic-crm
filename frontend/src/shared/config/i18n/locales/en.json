@@ -186,6 +186,10 @@
       "completed": "Completed",
       "cancelled": "Cancelled"
     },
+    "details": {
+      "title": "Appointment Details",
+      "doctor_notes": "Doctor Notes"
+    },
     "errors": {
       "load_failed": "Failed to load appointments",
       "cancel_failed": "Failed to cancel appointment",
@@ -241,20 +245,21 @@
   "admin": {
     "back_dashboard": "Back to Dashboard"
   },
-  "common": {
-    "loading": "Loading...",
-    "error": "An error occurred",
-    "success": "Success",
-    "prev": "Prev",
-    "next": "Next",
-    "page": "Page",
-    "of": "of",
-    "unknown": "Unknown",
-    "unknown_error": "An unknown error occurred",
-    "validation_error": "Validation error occurred",
-    "error_occurred": "An error occurred",
-    "network_error": "Network error: Could not connect to server. Please check your internet connection."
-  },
+    "common": {
+      "loading": "Loading...",
+      "error": "An error occurred",
+      "success": "Success",
+      "prev": "Prev",
+      "next": "Next",
+      "page": "Page",
+      "of": "of",
+      "unknown": "Unknown",
+      "close": "Close",
+      "unknown_error": "An unknown error occurred",
+      "validation_error": "Validation error occurred",
+      "error_occurred": "An error occurred",
+      "network_error": "Network error: Could not connect to server. Please check your internet connection."
+    },
   "booking": {
     "title": "Book Appointment",
     "select_doctor": "Select Doctor",
