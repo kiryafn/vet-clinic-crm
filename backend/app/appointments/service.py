@@ -133,8 +133,14 @@ async def create_appointment(db: AsyncSession, appointment_in: AppointmentCreate
 
     db.add(db_appointment)
     await db.commit()
-    await db.refresh(db_appointment)
-    return db_appointment
+    # Eager load relationships for the response schema
+    query = select(Appointment).filter(Appointment.id == db_appointment.id).options(
+        selectinload(Appointment.client),
+        selectinload(Appointment.doctor),
+        selectinload(Appointment.pet)
+    )
+    result = await db.execute(query)
+    return result.scalars().first()
 
 
 async def get_appointments(db: AsyncSession, skip: int = 0, limit: int = 100, filters: dict = None):

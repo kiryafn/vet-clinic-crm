@@ -3,6 +3,7 @@ from datetime import datetime
 from app.appointments.models import AppointmentStatus
 
 from app.users.schemas import UserResponse
+from app.clients.schemas import ClientRead
 from app.pets.schemas import PetRead
 from app.doctors.schemas import DoctorRead
 
@@ -26,7 +27,7 @@ class AppointmentRead(BaseModel):
     user_description: str | None = None
 
 
-    user: UserResponse
+    client: ClientRead
     doctor: DoctorRead
     pet: PetRead
 
