@@ -20,6 +20,49 @@ interface Pet {
     species: string;
 }
 
+// Функция для извлечения читаемого сообщения об ошибке из ответа FastAPI
+const extractErrorMessage = (error: any): string => {
+    if (!error) return 'An unknown error occurred';
+    
+    // Если это строка, возвращаем её
+    if (typeof error === 'string') return error;
+    
+    // Если это объект ошибки FastAPI/Pydantic с массивом detail
+    // Проверяем response.data.detail
+    if (error?.response?.data) {
+        const data = error.response.data;
+        
+        // Если detail - это массив (валидационные ошибки FastAPI/Pydantic)
+        if (Array.isArray(data.detail)) {
+            // Объединяем все сообщения об ошибках
+            const messages = data.detail
+                .filter((err: any) => err?.msg && typeof err.msg === 'string')
+                .map((err: any) => {
+                    const location = Array.isArray(err.loc) ? err.loc.slice(1).join('.') : '';
+                    return `${err.msg}${location ? ` (${location})` : ''}`;
+                });
+            return messages.length > 0 ? messages.join('; ') : 'Validation error occurred';
+        }
+        
+        // Если detail - это строка
+        if (data.detail && typeof data.detail === 'string') {
+            return data.detail;
+        }
+    }
+    
+    // Если есть message
+    if (error?.message && typeof error.message === 'string') {
+        return error.message;
+    }
+    
+    // Если error - это объект, попробуем конвертировать в строку (для отладки)
+    try {
+        return JSON.stringify(error);
+    } catch {
+        return 'An error occurred';
+    }
+};
+
 export const BookAppointmentPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -55,9 +98,10 @@ export const BookAppointmentPage = () => {
                 // Обрабатываем пагинированный ответ
                 const petsData = petsRes.data?.items || petsRes.data || [];
                 setPets(Array.isArray(petsData) ? petsData : []);
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to load data', err);
-                setError('Failed to load doctors or pets. Please try again.');
+                const errorMessage = extractErrorMessage(err) || 'Failed to load doctors or pets. Please try again.';
+                setError(errorMessage);
             } finally {
                 setIsFetchingData(false);
             }
@@ -83,7 +127,7 @@ export const BookAppointmentPage = () => {
                 setSlots(availableSlots || []);
             } catch (err: any) {
                 console.error('Error fetching slots:', err);
-                const errorMessage = err?.response?.data?.detail || err?.message || 'Failed to load available slots';
+                const errorMessage = extractErrorMessage(err) || 'Failed to load available slots';
                 setError(errorMessage);
             } finally {
                 setLoadingSlots(false);
@@ -109,8 +153,8 @@ export const BookAppointmentPage = () => {
             });
             navigate('/appointments');
         } catch (err: any) {
-            const detail = err.response?.data?.detail;
-            setError(typeof detail === 'string' ? detail : 'Failed to book appointment');
+            const errorMessage = extractErrorMessage(err) || 'Failed to book appointment';
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
