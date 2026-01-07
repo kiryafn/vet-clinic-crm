@@ -6,10 +6,13 @@ import { appointmentApi } from '../../entities/appointment/api/appointmentApi';
 import { Header } from '../../widgets/Header/Header';
 import { AppointmentCalendar } from '../../entities/appointment/ui/AppointmentCalendar';
 import { AppointmentList } from '../../entities/appointment/ui/AppointmentList';
+import { useAuth } from '../../entities/session/model/store';
+import { UserRole } from '../../entities/user/model/types';
 import type { Appointment } from '../../entities/appointment/model/types';
 
 export const DoctorSchedulePage = () => {
     const { t } = useTranslation();
+    const { user } = useAuth();
 
     // --- STATE ---
     const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
@@ -54,7 +57,7 @@ export const DoctorSchedulePage = () => {
             const data = await appointmentApi.getAll(params);
             // Фильтруем отмененные записи для календаря
             const filteredItems = viewMode === 'calendar' 
-                ? data.items.filter(apt => apt.status !== 'cancelled')
+                ? data.items.filter((apt: Appointment) => apt.status !== 'cancelled')
                 : data.items;
             setAppointments(filteredItems);
             setTotal(data.total);
@@ -164,6 +167,7 @@ export const DoctorSchedulePage = () => {
                             onViewChange={setCalendarView}
                             onDateChange={setDate}
                             onRangeChange={onRangeChange}
+                            userRole={user?.role || UserRole.DOCTOR}
                         />
                     </div>
                 )}

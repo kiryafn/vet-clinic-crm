@@ -7,6 +7,7 @@ import { X } from 'lucide-react';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import type { Appointment } from '../model/types';
 import { AppointmentStatus } from '../model/types';
+import { UserRole } from '../../../entities/user/model/types';
 import './AppointmentCalendar.css';
 
 const locales = { 'en': enUS, 'uk': uk };
@@ -19,13 +20,15 @@ interface CalendarEvent extends Event {
 interface CustomEventProps {
     event: CalendarEvent;
     onCancel?: (id: number) => void;
+    userRole?: UserRole;
 }
 
-const CustomEvent = ({ event, onCancel }: CustomEventProps) => {
+const CustomEvent = ({ event, onCancel, userRole }: CustomEventProps) => {
     const { t } = useTranslation();
     const apt = event.resource;
     const isCancelled = apt.status === AppointmentStatus.CANCELLED;
     const isCompleted = apt.status === AppointmentStatus.COMPLETED;
+    const isDoctor = userRole === UserRole.DOCTOR;
 
     const handleCancel = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -46,9 +49,22 @@ const CustomEvent = ({ event, onCancel }: CustomEventProps) => {
                     <span className="mr-1">{statusEmoji}</span>
                     {(event as any).title || `${apt.pet?.name || 'Pet'} (${apt.pet?.species || ''})`}
                 </div>
-                <div className="event-doctor">
-                    👨‍⚕️ {apt.doctor?.full_name}
-                </div>
+                {isDoctor ? (
+                    // Для доктора показываем клиента и питомца
+                    <>
+                        <div className="event-doctor">
+                            👤 {apt.client?.full_name || 'Unknown Client'}
+                        </div>
+                        <div className="event-doctor">
+                            🐾 {apt.pet?.name || 'Pet'} ({apt.pet?.species || ''})
+                        </div>
+                    </>
+                ) : (
+                    // Для клиента показываем доктора
+                    <div className="event-doctor">
+                        👨‍⚕️ {apt.doctor?.full_name}
+                    </div>
+                )}
                 {apt.reason && (
                     <div className="event-reason">
                         💬 {apt.reason}
@@ -78,6 +94,7 @@ interface AppointmentCalendarProps {
     onRangeChange: (range: Date[] | { start: Date; end: Date }) => void;
     onCancelAppointment?: (id: number) => void;
     onSelectSlot?: (slotInfo: SlotInfo) => void;
+    userRole?: UserRole;
 }
 
 export const AppointmentCalendar = ({
@@ -89,18 +106,29 @@ export const AppointmentCalendar = ({
     onRangeChange,
     onCancelAppointment,
     onSelectSlot,
+    userRole,
 }: AppointmentCalendarProps) => {
     const { i18n } = useTranslation();
 
     const events: CalendarEvent[] = useMemo(() => {
-        return appointments.map(apt => ({
-            id: apt.id,
-            title: `${apt.pet?.name || 'Pet'} (${apt.pet?.species || ''})`,
-            start: new Date(apt.date_time),
-            end: new Date(new Date(apt.date_time).getTime() + (apt.duration_minutes || 45) * 60000),
-            resource: apt,
-        }));
-    }, [appointments]);
+        const isDoctor = userRole === UserRole.DOCTOR;
+        return appointments.map(apt => {
+            // Для доктора показываем клиента и питомца, для клиента - только питомца
+            let title = '';
+            if (isDoctor) {
+                title = `${apt.client?.full_name || 'Client'}: ${apt.pet?.name || 'Pet'} (${apt.pet?.species || ''})`;
+            } else {
+                title = `${apt.pet?.name || 'Pet'} (${apt.pet?.species || ''})`;
+            }
+            return {
+                id: apt.id,
+                title,
+                start: new Date(apt.date_time),
+                end: new Date(new Date(apt.date_time).getTime() + (apt.duration_minutes || 45) * 60000),
+                resource: apt,
+            };
+        });
+    }, [appointments, userRole]);
 
     const eventPropGetter = useCallback((event: CalendarEvent) => {
         const status = event.resource.status;
@@ -148,6 +176,7 @@ export const AppointmentCalendar = ({
                         <CustomEvent
                             event={props.event as CalendarEvent}
                             onCancel={onCancelAppointment}
+                            userRole={userRole}
                         />
                     ),
                 }}
