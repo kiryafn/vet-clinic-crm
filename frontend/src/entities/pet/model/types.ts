@@ -24,6 +24,7 @@ export interface Pet {
     species: PetSpecies | string;
     breed?: string | null;
     birth_date?: string | null;
+    weight?: number | null;
     age?: {
         years: number;
         months: number;
@@ -35,6 +36,7 @@ export interface PetCreate {
     species: PetSpecies | string;
     breed?: string | null;
     birth_date?: string | null;
+    weight?: number | null;
 }
 
 export type PetUpdate = Partial<PetCreate>;

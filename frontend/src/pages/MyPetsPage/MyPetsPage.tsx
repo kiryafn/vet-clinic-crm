@@ -59,7 +59,25 @@ export const MyPetsPage = () => {
         if (!editingPet) return;
         setIsUpdating(true);
         try {
-            await petApi.update(editingPet.id, data);
+            let birthDate = null;
+            if (data.age) {
+                if (/^\d{4}-\d{2}$/.test(data.age)) {
+                    birthDate = `${data.age}-01`;
+                } else {
+                    const dateObj = new Date(data.age);
+                    if (!isNaN(dateObj.getTime())) {
+                        birthDate = dateObj.toISOString().split('T')[0];
+                    }
+                }
+            }
+
+            await petApi.update(editingPet.id, {
+                name: data.name,
+                species: data.species,
+                breed: data.breed || null,
+                birth_date: birthDate,
+                weight: data.weight ? parseFloat(data.weight) : null,
+            });
             setEditingPet(null);
             await fetchPets();
         } catch (error) {
@@ -115,7 +133,7 @@ export const MyPetsPage = () => {
                                 species: typeof editingPet.species === 'string' ? editingPet.species : 'DOG',
                                 breed: editingPet.breed || '',
                                 age: editingPet.birth_date || '',
-                                weight: ''
+                                weight: editingPet.weight?.toString() || ''
                             }}
                             onSubmit={handleUpdate}
                             isLoading={isUpdating}

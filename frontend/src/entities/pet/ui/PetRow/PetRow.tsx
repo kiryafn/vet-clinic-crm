@@ -61,6 +61,13 @@ export const PetRow = ({ pet, onDelete, onUpdate }: PetRowProps) => {
                     <span className="text-gray-400">-</span>
                 )}
             </td>
+            <td className="px-6 py-5 text-sm text-gray-600 font-medium">
+                {pet.weight !== null && pet.weight !== undefined ? (
+                    <span className="text-gray-900 font-medium">{pet.weight.toFixed(1)} {t('pet.table.kg')}</span>
+                ) : (
+                    <span className="text-gray-400">-</span>
+                )}
+            </td>
             <td className="px-8 py-5 text-right">
                 <div className="flex items-center justify-end gap-2">
                     <button

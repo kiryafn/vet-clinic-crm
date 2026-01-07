@@ -10,6 +10,7 @@ class PetCreate(BaseModel):
     species: PetSpecies
     breed: str | None = Field(None, max_length=50, description="Pet breed (max 50 characters)")
     birth_date: date | None = None
+    weight: float | None = Field(None, gt=0, le=1000, description="Pet weight in kg (0-1000)")
 
     @field_validator('name')
     @classmethod
@@ -41,12 +42,23 @@ class PetCreate(BaseModel):
                 raise ValueError('Birth year cannot be earlier than 1970')
         return v
 
+    @field_validator('weight')
+    @classmethod
+    def validate_weight(cls, v: float | None) -> float | None:
+        if v is not None:
+            if v <= 0:
+                raise ValueError('Weight must be greater than 0')
+            if v > 1000:
+                raise ValueError('Weight cannot exceed 1000 kg')
+        return v
+
 
 class PetUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=50, description="Pet name (1-50 characters)")
     species: PetSpecies | None = None
     breed: str | None = Field(None, max_length=50, description="Pet breed (max 50 characters)")
     birth_date: date | None = None
+    weight: float | None = Field(None, gt=0, le=1000, description="Pet weight in kg (0-1000)")
 
     @field_validator('name')
     @classmethod
@@ -79,12 +91,23 @@ class PetUpdate(BaseModel):
                 raise ValueError('Birth year cannot be earlier than 1970')
         return v
 
+    @field_validator('weight')
+    @classmethod
+    def validate_weight(cls, v: float | None) -> float | None:
+        if v is not None:
+            if v <= 0:
+                raise ValueError('Weight must be greater than 0')
+            if v > 1000:
+                raise ValueError('Weight cannot exceed 1000 kg')
+        return v
+
 class PetRead(BaseModel):
     id: int
     name: str
     species: PetSpecies
     breed: str | None = None
     birth_date: date | None = None
+    weight: float | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

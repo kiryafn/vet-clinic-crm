@@ -45,6 +45,7 @@ export const useCreatePet = () => {
                 species: values.species,
                 breed: values.breed || null,
                 birth_date: birthDate,
+                weight: values.weight ? parseFloat(values.weight) : null,
             });
 
             navigate('/');

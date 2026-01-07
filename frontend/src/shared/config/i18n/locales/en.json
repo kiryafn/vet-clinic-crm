@@ -98,6 +98,8 @@
       "species": "Species",
       "breed": "Breed",
       "age": "Age",
+      "weight": "Weight",
+      "kg": "kg",
       "yrs": "yrs",
       "mos": "mos",
       "actions": "Actions",

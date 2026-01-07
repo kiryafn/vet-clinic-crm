@@ -59,6 +59,7 @@ export const PetList = ({
                                 <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('pet.table.species')}</th>
                                 <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('pet.table.breed')}</th>
                                 <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('pet.table.age')}</th>
+                                <th className="px-6 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('pet.table.weight')}</th>
                                 <th className="px-8 py-5 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">{t('pet.table.actions')}</th>
                             </tr>
                         </thead>
