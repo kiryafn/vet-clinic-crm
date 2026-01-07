@@ -86,6 +86,15 @@ export const BookAppointmentPage = () => {
     // UI state
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Validation errors
+    const [validationErrors, setValidationErrors] = useState<{
+        doctorId?: string;
+        petId?: string;
+        date?: string;
+        slot?: string;
+        description?: string;
+    }>({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -137,9 +146,49 @@ export const BookAppointmentPage = () => {
         fetchSlots();
     }, [doctorId, date]);
 
+    const validate = (): boolean => {
+        const newErrors: typeof validationErrors = {};
+
+        if (!doctorId) {
+            newErrors.doctorId = 'Please select a doctor';
+        }
+
+        if (!petId) {
+            newErrors.petId = 'Please select a pet';
+        }
+
+        if (!date) {
+            newErrors.date = 'Please select a date';
+        } else {
+            const selectedDate = new Date(date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate < today) {
+                newErrors.date = 'Date cannot be in the past';
+            }
+        }
+
+        if (!selectedSlot) {
+            newErrors.slot = 'Please select a time slot';
+        } else {
+            const slotDate = new Date(selectedSlot);
+            const now = new Date();
+            if (slotDate <= now) {
+                newErrors.slot = 'Selected time slot must be in the future';
+            }
+        }
+
+        if (description && description.trim().length > 500) {
+            newErrors.description = 'Description cannot exceed 500 characters';
+        }
+
+        setValidationErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!selectedSlot || !petId || !doctorId) return;
+        if (!validate()) return;
 
         setIsSubmitting(true);
         setError('');
@@ -149,7 +198,7 @@ export const BookAppointmentPage = () => {
                 doctor_id: Number(doctorId),
                 pet_id: Number(petId),
                 date_time: selectedSlot, // Slot is already an ISO string from backend
-                user_description: description
+                reason: description.trim() || undefined
             });
             navigate('/appointments');
         } catch (err: any) {
@@ -188,8 +237,13 @@ export const BookAppointmentPage = () => {
                                         onChange={e => {
                                             setDoctorId(e.target.value);
                                             setSelectedSlot(null);
+                                            if (validationErrors.doctorId) {
+                                                setValidationErrors({ ...validationErrors, doctorId: undefined });
+                                            }
                                         }}
-                                        className="w-full rounded-xl border-gray-200 bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+                                        className={`w-full rounded-xl border bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all ${
+                                            validationErrors.doctorId ? 'border-red-500' : 'border-gray-200'
+                                        }`}
                                         required
                                     >
                                         <option value="">-- Choose a Doctor --</option>
@@ -199,13 +253,23 @@ export const BookAppointmentPage = () => {
                                             </option>
                                         ))}
                                     </select>
+                                    {validationErrors.doctorId && (
+                                        <span className="text-xs text-red-500 mt-1 ml-1">{validationErrors.doctorId}</span>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Select Pet</label>
                                     <select
                                         value={petId}
-                                        onChange={e => setPetId(e.target.value)}
-                                        className="w-full rounded-xl border-gray-200 bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+                                        onChange={e => {
+                                            setPetId(e.target.value);
+                                            if (validationErrors.petId) {
+                                                setValidationErrors({ ...validationErrors, petId: undefined });
+                                            }
+                                        }}
+                                        className={`w-full rounded-xl border bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all ${
+                                            validationErrors.petId ? 'border-red-500' : 'border-gray-200'
+                                        }`}
                                         required
                                     >
                                         <option value="">-- Choose a Pet --</option>
@@ -215,6 +279,9 @@ export const BookAppointmentPage = () => {
                                             </option>
                                         ))}
                                     </select>
+                                    {validationErrors.petId && (
+                                        <span className="text-xs text-red-500 mt-1 ml-1">{validationErrors.petId}</span>
+                                    )}
                                 </div>
                             </div>
 
@@ -226,7 +293,11 @@ export const BookAppointmentPage = () => {
                                 onChange={e => {
                                     setDate(e.target.value);
                                     setSelectedSlot(null);
+                                    if (validationErrors.date) {
+                                        setValidationErrors({ ...validationErrors, date: undefined });
+                                    }
                                 }}
+                                error={validationErrors.date}
                                 required
                                 min={new Date().toISOString().split('T')[0]}
                             />
@@ -235,6 +306,9 @@ export const BookAppointmentPage = () => {
                             {doctorId && date && (
                                 <div className="animate-fade-in">
                                     <label className="block text-sm font-medium text-gray-700 mb-3">Available Time Slots</label>
+                                    {validationErrors.slot && (
+                                        <span className="text-xs text-red-500 mb-2 block">{validationErrors.slot}</span>
+                                    )}
 
                                     {loadingSlots ? (
                                         <div className="text-gray-500 text-sm">Loading slots...</div>
@@ -247,7 +321,12 @@ export const BookAppointmentPage = () => {
                                                     <button
                                                         key={slotIso}
                                                         type="button"
-                                                        onClick={() => setSelectedSlot(slotIso)}
+                                                        onClick={() => {
+                                                            setSelectedSlot(slotIso);
+                                                            if (validationErrors.slot) {
+                                                                setValidationErrors({ ...validationErrors, slot: undefined });
+                                                            }
+                                                        }}
                                                         className={`
                                                             py-2 px-3 rounded-lg text-sm font-medium transition-all text-center
                                                             ${isSelected
@@ -274,11 +353,24 @@ export const BookAppointmentPage = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Visit</label>
                                 <textarea
                                     value={description}
-                                    onChange={e => setDescription(e.target.value)}
-                                    className="w-full rounded-xl border-gray-200 bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all min-h-[100px]"
+                                    onChange={e => {
+                                        setDescription(e.target.value);
+                                        if (validationErrors.description) {
+                                            setValidationErrors({ ...validationErrors, description: undefined });
+                                        }
+                                    }}
+                                    className={`w-full rounded-xl border bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all min-h-[100px] ${
+                                        validationErrors.description ? 'border-red-500' : 'border-gray-200'
+                                    }`}
                                     placeholder="Briefly describe the issue..."
-                                    required
+                                    maxLength={500}
                                 />
+                                {validationErrors.description && (
+                                    <span className="text-xs text-red-500 mt-1 ml-1">{validationErrors.description}</span>
+                                )}
+                                <div className="text-xs text-gray-500 mt-1 text-right">
+                                    {description.length}/500
+                                </div>
                             </div>
 
                             <div className="flex gap-4 pt-4">

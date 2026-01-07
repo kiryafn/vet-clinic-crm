@@ -1,22 +1,79 @@
 from typing import List
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from datetime import date
 
 from app.pets.models import PetSpecies
 
 
 class PetCreate(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=50, description="Pet name (1-50 characters)")
     species: PetSpecies
-    breed: str | None = None
+    breed: str | None = Field(None, max_length=50, description="Pet breed (max 50 characters)")
     birth_date: date | None = None
 
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError('Name cannot be empty or only whitespace')
+        return v.strip()
+
+    @field_validator('breed')
+    @classmethod
+    def validate_breed(cls, v: str | None) -> str | None:
+        if v is not None:
+            v = v.strip() if v else None
+            if v and len(v) > 50:
+                raise ValueError('Breed cannot exceed 50 characters')
+            if v == '':
+                return None
+        return v
+
+    @field_validator('birth_date')
+    @classmethod
+    def validate_birth_date(cls, v: date | None) -> date | None:
+        if v is not None:
+            today = date.today()
+            if v > today:
+                raise ValueError('Birth date cannot be in the future')
+        return v
+
+
 class PetUpdate(BaseModel):
-    name: str | None = None
+    name: str | None = Field(None, min_length=1, max_length=50, description="Pet name (1-50 characters)")
     species: PetSpecies | None = None
-    breed: str | None = None
+    breed: str | None = Field(None, max_length=50, description="Pet breed (max 50 characters)")
     birth_date: date | None = None
+
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, v: str | None) -> str | None:
+        if v is not None:
+            if not v or not v.strip():
+                raise ValueError('Name cannot be empty or only whitespace')
+            return v.strip()
+        return v
+
+    @field_validator('breed')
+    @classmethod
+    def validate_breed(cls, v: str | None) -> str | None:
+        if v is not None:
+            v = v.strip() if v else None
+            if v and len(v) > 50:
+                raise ValueError('Breed cannot exceed 50 characters')
+            if v == '':
+                return None
+        return v
+
+    @field_validator('birth_date')
+    @classmethod
+    def validate_birth_date(cls, v: date | None) -> date | None:
+        if v is not None:
+            today = date.today()
+            if v > today:
+                raise ValueError('Birth date cannot be in the future')
+        return v
 
 class PetRead(BaseModel):
     id: int

@@ -31,6 +31,14 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
     const [age, setAge] = useState(initialValues?.age || '');
     const [weight, setWeight] = useState(initialValues?.weight || '');
 
+    // Validation errors
+    const [errors, setErrors] = useState<{
+        name?: string;
+        breed?: string;
+        age?: string;
+        weight?: string;
+    }>({});
+
     // Reset when initialValues change
     useEffect(() => {
         if (initialValues) {
@@ -43,12 +51,58 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
                 setAge(initialValues.age || '');
             }
             setWeight(initialValues.weight || '');
+            setErrors({});
         }
     }, [initialValues]);
 
+    const validate = (): boolean => {
+        const newErrors: typeof errors = {};
+
+        // Name validation
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+            newErrors.name = t('pet.validation.name_required', 'Name is required');
+        } else if (trimmedName.length < 1) {
+            newErrors.name = t('pet.validation.name_min', 'Name must be at least 1 character');
+        } else if (trimmedName.length > 50) {
+            newErrors.name = t('pet.validation.name_max', 'Name cannot exceed 50 characters');
+        }
+
+        // Breed validation
+        if (breed && breed.trim().length > 50) {
+            newErrors.breed = t('pet.validation.breed_max', 'Breed cannot exceed 50 characters');
+        }
+
+        // Birth date validation
+        if (!age) {
+            newErrors.age = t('pet.validation.birth_date_required', 'Birth date is required');
+        } else {
+            const selectedDate = new Date(age + '-01');
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            if (selectedDate > today) {
+                newErrors.age = t('pet.validation.birth_date_future', 'Birth date cannot be in the future');
+            }
+        }
+
+        // Weight validation
+        if (weight) {
+            const weightNum = parseFloat(weight);
+            if (isNaN(weightNum) || weightNum < 0) {
+                newErrors.weight = t('pet.validation.weight_positive', 'Weight must be a positive number');
+            } else if (weightNum > 1000) {
+                newErrors.weight = t('pet.validation.weight_max', 'Weight cannot exceed 1000 kg');
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        onSubmit({ name, species, breed, age, weight });
+        if (!validate()) return;
+        onSubmit({ name: name.trim(), species, breed: breed.trim() || '', age, weight });
     };
 
     return (
@@ -56,9 +110,14 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
             <Input
                 label={t('pet.form.name')}
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                    setName(e.target.value);
+                    if (errors.name) setErrors({ ...errors, name: undefined });
+                }}
+                error={errors.name}
                 required
                 placeholder={t('pet.form.placeholder_name')}
+                maxLength={50}
             />
 
             <div className="input-wrapper">
@@ -77,8 +136,13 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
             <Input
                 label={t('pet.form.breed')}
                 value={breed}
-                onChange={(e) => setBreed(e.target.value)}
+                onChange={(e) => {
+                    setBreed(e.target.value);
+                    if (errors.breed) setErrors({ ...errors, breed: undefined });
+                }}
+                error={errors.breed}
                 placeholder={t('pet.form.placeholder_breed')}
+                maxLength={50}
             />
 
             <div className="flex gap-4">
@@ -86,16 +150,29 @@ export const PetForm = ({ initialValues, onSubmit, isLoading, submitLabel, onCan
                     label={t('pet.form.birth_date')}
                     type="month"
                     value={age}
-                    onChange={(e) => setAge(e.target.value)}
+                    onChange={(e) => {
+                        setAge(e.target.value);
+                        if (errors.age) setErrors({ ...errors, age: undefined });
+                    }}
+                    error={errors.age}
                     className="w-full"
                     required
+                    max={new Date().toISOString().slice(0, 7)}
                 />
                 <Input
                     label={t('pet.form.weight')}
                     type="number"
                     value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
+                    onChange={(e) => {
+                        setWeight(e.target.value);
+                        if (errors.weight) setErrors({ ...errors, weight: undefined });
+                    }}
+                    error={errors.weight}
                     className="w-full"
+                    min="0"
+                    max="1000"
+                    step="0.1"
+                    placeholder={t('pet.form.placeholder_weight', 'kg')}
                 />
             </div>
 
