@@ -1,8 +1,8 @@
-"""Initial structure
+"""Add weight to pet
 
-Revision ID: 9128ba70088d
+Revision ID: 113f0af8cd2c
 Revises: 
-Create Date: 2026-01-06 16:04:35.381774
+Create Date: 2026-01-07 22:27:56.402060
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '9128ba70088d'
+revision: str = '113f0af8cd2c'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -52,7 +52,6 @@ def upgrade() -> None:
     sa.Column('experience_years', sa.Integer(), nullable=False),
     sa.Column('phone_number', sa.String(length=20), nullable=True),
     sa.Column('bio', sa.Text(), nullable=True),
-    sa.Column('price', sa.Integer(), nullable=False),
     sa.Column('specialization', sa.Enum('OPHTHALMOLOGIST', 'DERMATOLOGIST', 'CARDIOLOGIST', 'THERAPIST', 'SURGEON', 'DENTIST', name='doctorspecialization'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
@@ -66,6 +65,7 @@ def upgrade() -> None:
     sa.Column('species', sa.Enum('DOG', 'CAT', 'BIRD', 'FISH', 'RABBIT', 'HAMSTER', 'GUINEA_PIG', 'MOUSE_RAT', 'FERRET', 'REPTILE', 'AMPHIBIAN', 'HORSE', 'LIVESTOCK', 'EXOTIC', 'OTHER', name='petspecies'), nullable=False),
     sa.Column('breed', sa.String(length=50), nullable=True),
     sa.Column('birth_date', sa.Date(), nullable=True),
+    sa.Column('weight', sa.Float(), nullable=True),
     sa.Column('owner_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
