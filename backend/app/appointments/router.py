@@ -9,7 +9,7 @@ from app.users.models import User, UserRole
 from app.appointments import schemas, service
 from app.clients.service import get_client_by_user_id
 
-router = APIRouter()
+router = APIRouter(prefix="/appointments", tags=["Appointments"])
 
 @router.post("/", response_model=schemas.AppointmentRead)
 async def create_appointment(
