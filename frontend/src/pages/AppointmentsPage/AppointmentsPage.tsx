@@ -112,7 +112,9 @@ export const AppointmentsPage = () => {
                 {/* Header Controls */}
                 <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{t('appointments.page_title')}</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">
+                            📅 {t('appointments.page_title')}
+                        </h1>
                         <p className="text-gray-500 mt-2">{t('appointments.page_subtitle')}</p>
                     </div>
                     <div className="flex gap-3">
@@ -123,7 +125,7 @@ export const AppointmentsPage = () => {
                                     viewMode === 'calendar' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'
                                 }`}
                             >
-                                {t('appointments.actions.calendar_view')}
+                                📅 {t('appointments.actions.calendar_view')}
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
@@ -131,11 +133,14 @@ export const AppointmentsPage = () => {
                                     viewMode === 'list' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'
                                 }`}
                             >
-                                {t('appointments.actions.list_view')}
+                                📋 {t('appointments.actions.list_view')}
                             </button>
                         </div>
-                        <Button onClick={() => navigate('/book-appointment')}>
-                            + {t('appointments.actions.book')}
+                        <Button 
+                            onClick={() => navigate('/book-appointment')}
+                            className="shadow-lg shadow-indigo-500/20"
+                        >
+                            ➕ {t('appointments.actions.book')}
                         </Button>
                     </div>
                 </div>
@@ -152,14 +157,33 @@ export const AppointmentsPage = () => {
                 {isLoading && viewMode === 'calendar' && (
                     <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 h-[800px] flex items-center justify-center">
                         <div className="text-center">
-                            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-4"></div>
+                            <div className="text-6xl mb-4 animate-bounce">📅</div>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                             <p className="text-gray-600 font-medium">{t('common.loading')}</p>
                         </div>
                     </div>
                 )}
 
                 {/* Calendar View */}
-                {viewMode === 'calendar' && !isLoading && (
+                {viewMode === 'calendar' && !isLoading && appointments.length === 0 && (
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 h-[800px] flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="text-6xl mb-4">📅</div>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                {t('appointments.list.empty_title', 'No appointments yet')}
+                            </h3>
+                            <p className="text-gray-500 mb-6">
+                                {t('appointments.list.empty_desc', 'Book your first visit to see it here!')}
+                            </p>
+                            <Button onClick={() => navigate('/book-appointment')}>
+                                ➕ {t('appointments.actions.book')}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Calendar View with Appointments */}
+                {viewMode === 'calendar' && !isLoading && appointments.length > 0 && (
                     <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 h-[800px]">
                         <AppointmentCalendar
                             appointments={appointments}

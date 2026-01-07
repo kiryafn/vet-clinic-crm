@@ -93,7 +93,9 @@ export const DoctorSchedulePage = () => {
                 {/* Header Controls */}
                 <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{t('home.cards.my_schedule', 'My Schedule')}</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">
+                            👨‍⚕️ {t('home.cards.my_schedule', 'My Schedule')}
+                        </h1>
                         <p className="text-gray-500 mt-2">{t('home.cards.my_schedule_desc', 'View your daily appointments and patient list')}</p>
                     </div>
                     <div className="flex gap-3">
@@ -104,7 +106,7 @@ export const DoctorSchedulePage = () => {
                                     viewMode === 'calendar' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'
                                 }`}
                             >
-                                {t('appointments.actions.calendar_view', 'Calendar')}
+                                📅 {t('appointments.actions.calendar_view', 'Calendar')}
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
@@ -112,7 +114,7 @@ export const DoctorSchedulePage = () => {
                                     viewMode === 'list' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'
                                 }`}
                             >
-                                {t('appointments.actions.list_view', 'List View')}
+                                📋 {t('appointments.actions.list_view', 'List View')}
                             </button>
                         </div>
                     </div>
@@ -130,14 +132,30 @@ export const DoctorSchedulePage = () => {
                 {isLoading && viewMode === 'calendar' && (
                     <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 h-[800px] flex items-center justify-center">
                         <div className="text-center">
-                            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-4"></div>
+                            <div className="text-6xl mb-4 animate-bounce">📅</div>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                             <p className="text-gray-600 font-medium">{t('common.loading', 'Loading...')}</p>
                         </div>
                     </div>
                 )}
 
-                {/* Calendar View */}
-                {viewMode === 'calendar' && !isLoading && (
+                {/* Calendar View - Empty State */}
+                {viewMode === 'calendar' && !isLoading && appointments.length === 0 && (
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 h-[800px] flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="text-6xl mb-4">📅</div>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                No appointments scheduled
+                            </h3>
+                            <p className="text-gray-500">
+                                Your schedule is clear! 🎉
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Calendar View with Appointments */}
+                {viewMode === 'calendar' && !isLoading && appointments.length > 0 && (
                     <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 h-[800px]">
                         <AppointmentCalendar
                             appointments={appointments}

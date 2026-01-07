@@ -34,15 +34,25 @@ const CustomEvent = ({ event, onCancel }: CustomEventProps) => {
         }
     };
 
+    // Эмодзи для статусов
+    const statusEmoji = isCompleted ? '✅' : isCancelled ? '❌' : '📅';
+
     return (
         <div
             className={`appointment-event ${isCancelled ? 'cancelled' : ''} ${isCompleted ? 'completed' : ''}`}
         >
             <div className="event-content">
-                <div className="event-title">{event.title}</div>
-                <div className="event-doctor">{apt.doctor?.full_name}</div>
+                <div className="event-title">
+                    <span className="mr-1">{statusEmoji}</span>
+                    {(event as any).title || `${apt.pet?.name || 'Pet'} (${apt.pet?.species || ''})`}
+                </div>
+                <div className="event-doctor">
+                    👨‍⚕️ {apt.doctor?.full_name}
+                </div>
                 {apt.reason && (
-                    <div className="event-reason">{apt.reason}</div>
+                    <div className="event-reason">
+                        💬 {apt.reason}
+                    </div>
                 )}
             </div>
             {onCancel && !isCancelled && !isCompleted && (
@@ -50,6 +60,7 @@ const CustomEvent = ({ event, onCancel }: CustomEventProps) => {
                     onClick={handleCancel}
                     className="event-cancel-btn"
                     aria-label={t('appointments.actions.cancel')}
+                    title={t('appointments.actions.cancel')}
                 >
                     <X size={12} />
                 </button>
