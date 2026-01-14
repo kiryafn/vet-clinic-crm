@@ -22,7 +22,7 @@ class Doctor(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
-    user: Mapped["User"] = relationship(back_populates="doctor_profile", lazy="joined")
+    user: Mapped["User"] = relationship(back_populates="doctor_profile", lazy="joined", cascade="all, delete-orphan", single_parent=True)
 
     full_name: Mapped[str] = mapped_column(String(100))
     experience_years: Mapped[int] = mapped_column(Integer, default=0)
@@ -31,4 +31,4 @@ class Doctor(Base, TimestampMixin):
 
     specialization: Mapped[DoctorSpecialization] = mapped_column(SqlEnum(DoctorSpecialization), default=DoctorSpecialization.THERAPIST)
 
-    appointments: Mapped[list["Appointment"]] = relationship(back_populates="doctor")
+    appointments: Mapped[list["Appointment"]] = relationship(back_populates="doctor", cascade="all, delete-orphan")

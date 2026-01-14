@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
@@ -111,27 +111,18 @@ async def update_client_or_404(
         )
     return client
 
-
 async def delete_client(db: AsyncSession, client_id: int) -> bool:
-    """Delete a client and associated user. Returns False if not found."""
+
     query = select(Client).where(Client.id == client_id)
     result = await db.execute(query)
-    client = result.scalars().first()
+    client = result.scalar_one_or_none()
 
-    if not client:
-        return False
-
-    user_query = select(User).where(User.id == client.user_id)
-    user_result = await db.execute(user_query)
-    user = user_result.scalars().first()
-
-    if user:
-        await db.delete(user)
-    else:
+    if client:
         await db.delete(client)
-
-    await db.commit()
+        await db.commit()
     return True
+
+
 
 
 async def delete_client_or_404(db: AsyncSession, client_id: int) -> None:
